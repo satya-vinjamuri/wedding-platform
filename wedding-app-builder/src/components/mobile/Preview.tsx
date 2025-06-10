@@ -21,14 +21,17 @@ import Countdown from "@/components/utilities/Countdown";
 import { saveFormToFirestore } from "@/lib/saveFormToFirestore";
 import AppPreviewRenderer from "@/components/utilities/AppPreviewRenderer";
 import { validateRequiredFields } from "@/components/utilities/FormValidation";
+
 const db = getFirestore();
 
 type Props = {
     form: FormState;
     goBack: () => void;
+    navigateToSection: (sectionId: string) => void; // 🆕
+
 };
 
-export default function Preview({ form, goBack }: Props) {
+export default function Preview({ form, goBack, navigateToSection }: Props) {
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState("home");
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -208,11 +211,37 @@ export default function Preview({ form, goBack }: Props) {
                     </DialogHeader>
                     <div className="text-sm text-black px-1 pb-2">
                         These fields are required and must be filled before submission:
-                        <ul className="list-disc mt-2 ml-6">
+                        <ul className="list-disc mt-2 ml-6 space-y-1">
+                            {errorMessages.map((msg, index) => (
+                                <li
+                                    key={index}
+                                    className="text-blue-700 underline cursor-pointer hover:text-blue-900 transition"
+                                    onClick={() => {
+                                        setShowErrorModal(false);
+                                        if (msg.toLowerCase().includes("save the date")) {
+                                            navigateToSection("saveDate");
+                                        } else if (msg.toLowerCase().includes("story")) {
+                                            navigateToSection("saveDate");
+                                        } else if (msg.toLowerCase().includes("hotel") || msg.toLowerCase().includes("venue")) {
+                                            navigateToSection("travel");
+                                        } else if (msg.toLowerCase().includes("settings")) {
+                                            navigateToSection("settings");
+                                        } else if (msg.toLowerCase().includes("registry")) {
+                                            navigateToSection("registry");
+                                        }
+                                    }}
+                                >
+                                    {msg}
+                                </li>
+                            ))}
+                        </ul>
+
+
+                        {/* <ul className="list-disc mt-2 ml-6">
                             {errorMessages.map((msg, index) => (
                                 <li key={index}>{msg}</li>
                             ))}
-                        </ul>
+                        </ul> */}
                         <p className="text-red-500 font-bold font-italic">Please fill out the complete form to get the best experience!</p>
                     </div>
                     <DialogFooter>

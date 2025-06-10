@@ -234,9 +234,8 @@ const Themes: React.FC<Props> = ({ form, goNext, goBack, handleChange }) => {
                                     )}
                                 >
                                     {form.brideName} & {form.groomName}
-                                    {form.brideName} & {form.groomName}
                                 </p>
-                                <p className="text-xl mt-2">
+                                <p className="text-xl ">
                                     Our special date: <br />
                                     {new Date(`${form.weddingDate}T00:00:00`).toLocaleDateString("en-US", {
                                         weekday: "long",
@@ -245,6 +244,16 @@ const Themes: React.FC<Props> = ({ form, goNext, goBack, handleChange }) => {
                                         day: "numeric",
                                     })}
                                 </p>
+                                <p className="text-xl">Location: {form.weddingLocation}</p>
+                                {form.saveTheDateImage && (
+                                    <div className="flex justify-center">
+                                        <img
+                                            src={URL.createObjectURL(form.saveTheDateImage)}
+                                            alt="Save the Date Preview"
+                                            className="w-32 h-32 object-cover rounded"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

@@ -425,7 +425,11 @@ export default function Home() {
                     <Themes form={form} handleChange={handleChange} goNext={goNext} goBack={goBack} />
                 )}
                 {sidebarItems[step]?.key === "preview" && (
-                    <Preview form={form} goBack={goBack} />
+                    <Preview form={form} goBack={goBack} navigateToSection={(key) => {
+                        const index = sidebarItems.findIndex((item) => item.key === key);
+                        if (index !== -1) setStep(index);
+                    }}
+                    />
                 )}
             </section>
         </main >
