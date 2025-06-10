@@ -135,10 +135,10 @@ POST /generate
 Content-Type: application/json
 
 {
-  "coupleName": "Jinal & Neeraj",
-  "weddingDate": "2026-02-20",
+  "coupleName": "Aditi & Vihaan",
+  "weddingDate": "2025-11-20",
   "weddingLocation": "Longwood Gardens, PA",
-  "appPassword": "jinalneeraj2026",
+  "appPassword": "aditiwedsvihaan",
   ...
 }
 ```
