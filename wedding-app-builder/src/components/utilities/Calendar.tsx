@@ -50,11 +50,24 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
     const [eventTime, setEventTime] = useState("");
     const [endTime, setEndTime] = useState("");
     const [eventDressCode, setEventDressCode] = useState("");
+    const [isMobile, setIsMobile] = useState(false);
+
+
+    const getInitialDate = () => {
+        if (form.weddingEvents.length > 0) {
+            const first = form.weddingEvents[0];
+            return new Date(`${first.date}T12:00:00`);
+        }
+        return new Date();
+    };
+
+    const [currentDate, setCurrentDate] = useState(getInitialDate);
     const [currentView, setCurrentView] = useState<View>(Views.MONTH);
-    const [currentDate, setCurrentDate] = useState(new Date());
+
 
     const months = moment.months();
     const years = Array.from({ length: 10 }, (_, i) => 2020 + i);
+
 
     const handleSelectSlot = ({ start, end }: SlotInfo) => {
         setSlotInfo({ start, end });
@@ -66,6 +79,8 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
         setEventDressCode("");
         setEventType("weddingEvents");
         setModalOpen(true);
+
+        console.log(start, end);
     };
 
     useEffect(() => {
@@ -90,6 +105,13 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
 
         setEvents(allEvents);
     }, [form]);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 640); // sm breakpoint
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     const parseTime = (date: Date, timeStr: string): Date => {
         const [time, modifier] = timeStr.split(" ");
@@ -191,69 +213,23 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
         setEventDressCode("");
     };
 
+    type EventKey = "weddingEvents" | "brideEvents" | "groomEvents";
 
-    // const handleAddOrUpdateEvent = () => {
-    //     if (!eventTitle || !slotInfo || !eventTime || !endTime) return;
-
-    //     const startDate = parseTime(slotInfo.start, eventTime);
-    //     const endDate = parseTime(slotInfo.start, endTime);
-
-    //     const id = editingId ?? uuidv4();
-
-    //     const newFormEvent: EventDetails = {
-    //         id,
-    //         name: eventTitle,
-    //         date: format(slotInfo.start, "yyyy-MM-dd"),
-    //         startTime: eventTime,
-    //         endTime,
-    //         location: eventLocation,
-    //         dressCode: eventDressCode,
-    //     };
-
-    //     const newCalendarEvent: CalendarEvent = {
-    //         ...newFormEvent,
-    //         id,
-    //         title: eventTitle,
-    //         start: startDate,
-    //         end: endDate,
-    //         time: eventTime,
-    //         type: eventType,
-    //     };
-
-    //     const formList = form[eventType];
-
-    //     const hasConflict = events.some((ev) => {
-    //         if (ev.type !== eventType || ev.id === id) return false;
-    //         return (
-    //             (startDate >= ev.start && startDate < ev.end) ||
-    //             (endDate > ev.start && endDate <= ev.end) ||
-    //             (startDate <= ev.start && endDate >= ev.end)
-    //         );
-    //     });
-
-    //     if (hasConflict) {
-    //         alert("Time conflict detected with another event of the same type.");
-    //         return;
-    //     }
-
-    //     const updatedFormArray = editingId
-    //         ? formList.map((e) => (e.id === editingId ? newFormEvent : e))
-    //         : [...formList, newFormEvent];
-
-    //     setForm({ ...form, [eventType]: updatedFormArray });
-
-    //     setEditingId(null);
-    //     setModalOpen(false);
-    //     setEventTitle("");
-    //     setEventLocation("");
-    //     setEventTime("");
-    //     setEndTime("");
-    //     setEventDressCode("");
-    // };
+    const handleDeleteEvent = (eventId: string, type: EventKey) => {
+        console.log(form.weddingEvents);
+        console.log("eventId ", eventId);
+        const updatedEvents = form[type].filter((event) => event.id !== eventId);
+        console.log('event', updatedEvents);
+        setForm((prevForm) => ({
+            ...prevForm,
+            [type]: updatedEvents,
+        }));
+        console.log("updatee form", form.weddingEvents);
+    };
 
     return (
         <div className="py-6 bg-[#FFF5F7]">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mb-2">
                 <Label className="text-black font-bold text-lg">Wedding Event Calendar</Label>
                 <div className="relative group cursor-pointer">
                     <span className="text-white bg-gray-500 rounded-full px-2 text-xs font-bold">?</span>
@@ -270,12 +246,28 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
                         newDate.setMonth(parseInt(e.target.value));
                         setCurrentDate(newDate);
                     }}
-                    className="border p-2 bg-[#FFF5F7] rounded"
+                    className="border p-2 bg-[#FFF5F7] rounded border border-pink-300"
                 >
                     {months.map((month, index) => (
                         <option key={index} value={index}>{month}</option>
                     ))}
                 </select>
+
+                {isMobile && (
+                    <select
+                        value={currentDate.getDate()}
+                        onChange={(e) => {
+                            const newDate = new Date(currentDate);
+                            newDate.setDate(parseInt(e.target.value));
+                            setCurrentDate(newDate);
+                        }}
+                        className="border p-2 bg-[#FFF5F7] rounded border border-pink-300"
+                    >
+                        {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                            <option key={day} value={day}>{day}</option>
+                        ))}
+                    </select>
+                )}
 
                 <select
                     value={currentDate.getFullYear()}
@@ -284,7 +276,7 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
                         newDate.setFullYear(parseInt(e.target.value));
                         setCurrentDate(newDate);
                     }}
-                    className="border bg-[#FFF5F7] p-2 rounded"
+                    className="border bg-[#FFF5F7] border border-pink-300 p-2 rounded"
                 >
                     {years.map((year) => (
                         <option key={year} value={year}>{year}</option>
@@ -298,12 +290,12 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
                     startAccessor="start"
                     endAccessor="end"
                     selectable
-                    view={currentView}
-                    views={["month", "week", "day"]}
+                    view={isMobile ? Views.DAY : currentView}
+                    views={isMobile ? ["day"] : ["month", "week", "day"]}
                     onView={setCurrentView}
                     date={currentDate}
                     onNavigate={setCurrentDate}
-                    style={{ height: 400, width: "100%" }} // ✅ Full width
+                    style={{ height: isMobile ? 300 : 400, width: "100%" }}
                     popup
                     onSelectSlot={handleSelectSlot}
                     onSelectEvent={(event: CalendarEvent) => {
@@ -322,13 +314,15 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
             </div>
 
 
+
+
             <Dialog open={modalOpen} onOpenChange={setModalOpen}>
                 <DialogContent className="space-y-4 max-w-xl bg-[#FFF5F7] text-black !bg-opacity-100 !backdrop-blur-none shadow-xl border border-gray-300 rounded-xl">
                     <DialogTitle className="text-lg font-bold text-center">{editingId ? "Update Event" : "Add New Event"}</DialogTitle>
 
                     {slotInfo && (
                         <p className="text-sm text-center text-gray-600">
-                            {format(slotInfo.start, "PPP")} — {format(slotInfo.end, "p")}
+                            {format(slotInfo.start, "PPP p")} — {format(slotInfo.end, "p")}
                         </p>
                     )}
 
@@ -372,6 +366,10 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
                     </div>
 
                     <div className="flex justify-end gap-2 pt-4">
+                        {editingId && (
+                            <Button variant="outline" className="text-sm border border-red-500 text-red-500 hover:bg-red-900 px-4 py-2 rounded-md"
+                                onClick={() => handleDeleteEvent(editingId, eventType)}>Delete Event</Button>
+                        )}
                         <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
                         <Button onClick={handleAddOrUpdateEvent} className="bg-pink-500 text-white font-bold">
                             {editingId ? "Update Event" : "Add Event"}

@@ -12,6 +12,7 @@ import Notifications from "./Notifications";
 interface FAQItem {
     question: string;
     answer: string;
+    customQuestion: string;
 }
 
 interface ContactInfo {
@@ -72,14 +73,46 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                 <Label className="text-mauve pb-2 text-lg font-semibold">FAQs</Label>
                 {(form.faqs || []).map((faq, index) => (
                     <div key={index} className="relative p-4 rounded-md border border-mauve bg-petal mb-4 space-y-2">
-                        <Input
-                            type="text"
-                            placeholder="Question"
-                            value={faq.question}
-                            onChange={(e) => updateFAQ(index, "question", e.target.value)}
-                            className="bg-white text-cocoa border border-mauve"
-                            disabled={isSubmitted}
-                        />
+
+                        {!isSubmitted && (
+                            <Button
+                                onClick={() => removeFAQ(index)}
+                                className="absolute top-1 left-1 text-red-500 hover:text-red-700"
+                                aria-label="Remove FAQ"
+                            >
+                                <X size={16} />
+                            </Button>
+                        )}
+                        <br />
+                        <div className="space-y-2">
+
+                            <select
+                                value={faq.question}
+                                onChange={(e) => updateFAQ(index, "question", e.target.value)}
+                                disabled={isSubmitted}
+                                className="bg-white text-cocoa border border-mauve px-3 py-2 rounded w-full"
+                            >
+                                <option value="">Select a common question</option>
+                                <option value="What time should we arrive?">What time should we arrive?</option>
+                                <option value="Is there a dress code?">Is there a dress code?</option>
+                                <option value="Will there be parking available?">Will there be parking available?</option>
+                                <option value="Are kids allowed?">Are kids allowed?</option>
+                                <option value="What's the venue address?">What's the venue address?</option>
+                                <option value="type your own">My own question</option>
+                            </select>
+
+                            {faq.question === "type your own" && (
+                                <Input
+                                    type="text"
+                                    placeholder="Enter your question..."
+                                    value={faq.customQuestion || ""}
+                                    onChange={(e) => updateFAQ(index, "customQuestion", e.target.value)}
+                                    className="bg-white text-cocoa border border-mauve w-full"
+                                    disabled={isSubmitted}
+                                />
+                            )}
+                        </div>
+
                         <Textarea
                             placeholder="Answer"
                             value={faq.answer}
@@ -87,15 +120,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                             className="bg-white text-cocoa border border-mauve"
                             disabled={isSubmitted}
                         />
-                        {!isSubmitted && (
-                            <button
-                                onClick={() => removeFAQ(index)}
-                                className="absolute top-2 right-2 text-red-500 hover:text-red-700"
-                                aria-label="Remove FAQ"
-                            >
-                                <X size={16} />
-                            </button>
-                        )}
+
                     </div>
                 ))}
                 {!isSubmitted && (

@@ -52,7 +52,7 @@ export interface FormState {
 
     // Settings
     enableSettings: boolean;
-    faqs: { question: string; answer: string }[];
+    faqs: { question: string; answer: string, customQuestion: string, }[];
     contactInfo: { name: string; phone: string; email: string }[];
 
     // Wedding Party
