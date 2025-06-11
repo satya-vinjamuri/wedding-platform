@@ -53,6 +53,9 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
     const [isMobile, setIsMobile] = useState(false);
 
 
+
+
+
     const getInitialDate = () => {
         if (form.weddingEvents.length > 0) {
             const first = form.weddingEvents[0];
@@ -65,8 +68,10 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
     const [currentView, setCurrentView] = useState<View>(Views.MONTH);
 
 
+
     const months = moment.months();
     const years = Array.from({ length: 10 }, (_, i) => 2020 + i);
+
 
 
     const handleSelectSlot = ({ start, end }: SlotInfo) => {
@@ -79,6 +84,8 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
         setEventDressCode("");
         setEventType("weddingEvents");
         setModalOpen(true);
+
+        console.log(start, end);
 
         console.log(start, end);
     };
@@ -105,6 +112,13 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
 
         setEvents(allEvents);
     }, [form]);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 640); // sm breakpoint
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 640); // sm breakpoint
@@ -320,12 +334,15 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
 
 
 
+
+
             <Dialog open={modalOpen} onOpenChange={setModalOpen}>
                 <DialogContent className="space-y-4 max-w-xl bg-[#FFF5F7] text-black !bg-opacity-100 !backdrop-blur-none shadow-xl border border-gray-300 rounded-xl">
                     <DialogTitle className="text-lg font-bold text-center">{editingId ? "Update Event" : "Add New Event"}</DialogTitle>
 
                     {slotInfo && (
                         <p className="text-sm text-center text-gray-600">
+                            {format(slotInfo.start, "PPP p")} — {format(slotInfo.end, "p")}
                             {format(slotInfo.start, "PPP p")} — {format(slotInfo.end, "p")}
                         </p>
                     )}
