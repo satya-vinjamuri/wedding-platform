@@ -166,12 +166,12 @@ const WeddingParty: React.FC<WeddingProps> = ({ form, setForm, goNext, goBack })
                                     <DialogTitle className="text-lg font-bold text-center">Add Wedding Party Member</DialogTitle>
                                     <div className="space-y-3">
                                         <Label>Name</Label>
-                                        <Input value={member.name} onChange={(e) => updateMember(side, index, "name", e.target.value)} disabled={isSubmitted} />
+                                        <Input value={member.name} onChange={(e) => updateMember(side, index, "name", e.target.value)} disabled={isSubmitted || form?.zipGenerated} />
                                         <Label>Role</Label>
                                         <select
                                             value={member.role}
                                             onChange={(e) => updateMember(side, index, "role", e.target.value)}
-                                            disabled={isSubmitted}
+                                            disabled={isSubmitted || form?.zipGenerated}
                                             className="w-full bg-[#FFF5F7] border border-gray-300 rounded px-3 py-2 text-sm text-black"
                                         >
                                             <option value="">Select a role</option>
@@ -186,30 +186,30 @@ const WeddingParty: React.FC<WeddingProps> = ({ form, setForm, goNext, goBack })
                                             ))}
                                         </select>
                                         <Label>Relation</Label>
-                                        <Input value={member.relation} onChange={(e) => updateMember(side, index, "relation", e.target.value)} disabled={isSubmitted} />
+                                        <Input value={member.relation} onChange={(e) => updateMember(side, index, "relation", e.target.value)} disabled={isSubmitted || form?.zipGenerated} />
                                         <Label>Photo</Label>
                                         <Input
                                             type="file"
                                             accept="image/*"
                                             onChange={(e) => updateMember(side, index, "image", e.target.files?.[0] || null)}
-                                            disabled={isSubmitted}
+                                            disabled={isSubmitted || form?.zipGenerated}
                                         />
                                         <div className="flex gap-2 pt-2 flex-wrap">
-                                            <Button onClick={() => setOpenModalIndex(null)} className="bg-pink-400 text-white text-xs font-bold hover:bg-pink-500" disabled={isSubmitted}>
+                                            <Button onClick={() => setOpenModalIndex(null)} className="bg-pink-400 text-white text-xs font-bold hover:bg-pink-500" disabled={isSubmitted || form?.zipGenerated}>
                                                 Done
                                             </Button>
-                                            <Button onClick={() => { setOpenModalIndex(null); addMember(side); }} className="bg-green-500 text-white text-xs font-bold hover:bg-green-600" disabled={isSubmitted}>
+                                            <Button onClick={() => { setOpenModalIndex(null); addMember(side); }} className="bg-green-500 text-white text-xs font-bold hover:bg-green-600" disabled={isSubmitted || form?.zipGenerated}>
                                                 Add Another
                                             </Button>
                                         </div>
                                     </div>
                                 </DialogContent>
                             </div>
-                        </Dialog>
+                        </Dialog >
                     );
                 })}
-            </div>
-        </div>
+            </div >
+        </div >
     );
 
     return (
@@ -219,7 +219,7 @@ const WeddingParty: React.FC<WeddingProps> = ({ form, setForm, goNext, goBack })
             <div className="flex justify-start gap-4">
                 <Dialog open={selectSideOpen} onOpenChange={setSelectSideOpen}>
                     <DialogTrigger asChild>
-                        <Button className="bg-pink-400 text-white font-bold" disabled={isSubmitted}>+ Add</Button>
+                        <Button className="bg-pink-400 text-white font-bold" disabled={isSubmitted || form?.zipGenerated}>+ Add</Button>
                     </DialogTrigger>
                     <DialogContent className="space-y-4 max-w-xl bg-[#FFF5F7] text-black shadow-xl border border-gray-300 rounded-xl">
                         <DialogTitle>Select a Side</DialogTitle>
@@ -243,7 +243,7 @@ const WeddingParty: React.FC<WeddingProps> = ({ form, setForm, goNext, goBack })
                 <Button variant="outline" className="font-bold" onClick={goBack}>Back</Button>
                 <Button className="bg-pink-400 text-white font-bold" onClick={goNext}>Next</Button>
             </div>
-        </div>
+        </div >
     );
 };
 

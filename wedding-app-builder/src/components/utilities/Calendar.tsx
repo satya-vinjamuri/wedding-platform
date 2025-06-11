@@ -227,6 +227,7 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
         console.log("updatee form", form.weddingEvents);
     };
 
+    console.log("form.issubmitted", form.isSubmitted);
     return (
         <div className="py-6 bg-[#FFF5F7]">
             <div className="flex items-center gap-2 mb-2">
@@ -247,6 +248,7 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
                         setCurrentDate(newDate);
                     }}
                     className="border p-2 bg-[#FFF5F7] rounded border border-pink-300"
+                    disabled={form.isSubmitted}
                 >
                     {months.map((month, index) => (
                         <option key={index} value={index}>{month}</option>
@@ -261,6 +263,7 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
                             newDate.setDate(parseInt(e.target.value));
                             setCurrentDate(newDate);
                         }}
+                        disabled={form.isSubmitted}
                         className="border p-2 bg-[#FFF5F7] rounded border border-pink-300"
                     >
                         {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
@@ -277,6 +280,7 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
                         setCurrentDate(newDate);
                     }}
                     className="border bg-[#FFF5F7] border border-pink-300 p-2 rounded"
+                    disabled={form.isSubmitted}
                 >
                     {years.map((year) => (
                         <option key={year} value={year}>{year}</option>
@@ -286,10 +290,10 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
             <div className="w-full overflow-x-auto">
                 <BigCalendar
                     localizer={localizer}
+                    selectable={form.isSubmitted}
                     events={events}
                     startAccessor="start"
                     endAccessor="end"
-                    selectable
                     view={isMobile ? Views.DAY : currentView}
                     views={isMobile ? ["day"] : ["month", "week", "day"]}
                     onView={setCurrentView}
@@ -329,7 +333,7 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <Label>Event Name</Label>
-                            <Input value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} />
+                            <Input value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} disabled={form.isSubmitted} />
                         </div>
 
                         <div>
@@ -338,6 +342,7 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
                                 value={eventType}
                                 onChange={(e) => setEventType(e.target.value as CalendarEvent["type"])}
                                 className="w-full border rounded-md px-2 py-2 bg-[#FFF5F7] text-black"
+                                disabled={form.isSubmitted}
                             >
                                 <option value="weddingEvents">Wedding</option>
                                 <option value="brideEvents">Bride</option>
@@ -347,31 +352,31 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
 
                         <div>
                             <Label>Start Time</Label>
-                            <Input value={eventTime} onChange={(e) => setEventTime(e.target.value)} placeholder="e.g. 5:00 PM" />
+                            <Input value={eventTime} onChange={(e) => setEventTime(e.target.value)} placeholder="e.g. 5:00 PM" disabled={form.isSubmitted} />
                         </div>
                         <div>
                             <Label>End Time</Label>
-                            <Input value={endTime} onChange={(e) => setEndTime(e.target.value)} placeholder="e.g. 5:00 PM" />
+                            <Input value={endTime} onChange={(e) => setEndTime(e.target.value)} placeholder="e.g. 5:00 PM" disabled={form.isSubmitted} />
                         </div>
 
                         <div>
                             <Label>Location</Label>
-                            <Input value={eventLocation} onChange={(e) => setEventLocation(e.target.value)} />
+                            <Input value={eventLocation} onChange={(e) => setEventLocation(e.target.value)} disabled={form.isSubmitted} />
                         </div>
 
                         <div className="sm:col-span-2">
                             <Label>Dress Code</Label>
-                            <Input value={eventDressCode} onChange={(e) => setEventDressCode(e.target.value)} />
+                            <Input value={eventDressCode} onChange={(e) => setEventDressCode(e.target.value)} disabled={form.isSubmitted} />
                         </div>
                     </div>
 
                     <div className="flex justify-end gap-2 pt-4">
                         {editingId && (
                             <Button variant="outline" className="text-sm border border-red-500 text-red-500 hover:bg-red-900 px-4 py-2 rounded-md"
-                                onClick={() => handleDeleteEvent(editingId, eventType)}>Delete Event</Button>
+                                onClick={() => handleDeleteEvent(editingId, eventType)} disabled={form.isSubmitted}>Delete Event</Button>
                         )}
                         <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-                        <Button onClick={handleAddOrUpdateEvent} className="bg-pink-500 text-white font-bold">
+                        <Button onClick={handleAddOrUpdateEvent} className="bg-pink-500 text-white font-bold" disabled={form.isSubmitted}>
                             {editingId ? "Update Event" : "Add Event"}
                         </Button>
                     </div>

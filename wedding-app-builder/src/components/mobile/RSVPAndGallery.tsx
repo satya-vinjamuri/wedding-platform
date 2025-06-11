@@ -25,7 +25,7 @@ export default function RSVPAndGallery({ form, handleChange, goNext, goBack }: a
                         value={form.galleryDriveUrl}
                         onChange={(e) => handleChange("galleryDriveUrl", e.target.value)}
                         className="w-full bg-beige text-black border border-pink-300 px-4 py-2"
-                        disabled={isSubmitted}
+                        disabled={isSubmitted || form?.zipGenerated}
                     />
                 </div>
             )}

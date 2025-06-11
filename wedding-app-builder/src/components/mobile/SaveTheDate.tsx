@@ -79,9 +79,24 @@ const SaveTheDate: React.FC<SaveTheDateProps> = ({
                             accept="image/*"
                             onChange={(e) => handleImageChange(e.target.files?.[0] || null)}
                             className="bg-beige text-black border border-pink-300 w-full"
-                            disabled={isSubmitted}
+                            disabled={isSubmitted || form?.zipGenerated}
                         />
-                        {form.saveTheDateImage && (
+                        {(form.saveTheDateImage || form.saveTheDateImageUrl) && (
+                            <div className="mt-4">
+                                <p className="text-black font-medium">Current Image:</p>
+                                <img
+                                    src={
+                                        form.saveTheDateImage
+                                            ? URL.createObjectURL(form.saveTheDateImage)
+                                            : form.saveTheDateImageUrl
+                                    }
+                                    alt="Save the Date"
+                                    className="w-48 h-auto rounded border mt-2"
+                                />
+                            </div>
+                        )}
+
+                        {/* {form.saveTheDateImage && (
                             <div className="mt-4">
                                 <p className="text-black font-medium">Current Image:</p>
                                 <img
@@ -90,7 +105,7 @@ const SaveTheDate: React.FC<SaveTheDateProps> = ({
                                     className="w-48 h-auto rounded border mt-2"
                                 />
                             </div>
-                        )}
+                        )} */}
                     </div>
 
                     {/* Enable Countdown Button */}
@@ -105,7 +120,7 @@ const SaveTheDate: React.FC<SaveTheDateProps> = ({
                                             : "bg-transparent text-black border-[#6B5A7A] hover:border-white"
                                             }`}
                                         onClick={() => handleToggle(field)}
-                                        disabled={isSubmitted}
+                                        disabled={isSubmitted || form?.zipGenerated}
                                     >
                                         {label}
                                     </Button>
@@ -136,7 +151,7 @@ const SaveTheDate: React.FC<SaveTheDateProps> = ({
                                 value={form.rsvpSheetUrl}
                                 onChange={(e) => handleChange("rsvpSheetUrl", e.target.value)}
                                 className="bg-beige text-black border border-pink-300 px-4 py-2 w-full"
-                                disabled={isSubmitted}
+                                disabled={isSubmitted || form?.zipGenerated}
                             />
                         </div>
                     )}
@@ -149,18 +164,20 @@ const SaveTheDate: React.FC<SaveTheDateProps> = ({
             </div>
 
             {/* Our Story below both columns */}
-            {form.enableStory && (
-                <div>
-                    <OurStory form={form} setForm={setForm} />
-                </div>
-            )}
+            {
+                form.enableStory && (
+                    <div>
+                        <OurStory form={form} setForm={setForm} />
+                    </div>
+                )
+            }
 
             {/* Navigation Buttons */}
             <div className="flex justify-start gap-4 pt-6 pb-4">
                 <Button variant="outline" onClick={goBack} className="text-black font-bold">Back</Button>
                 <Button className="bg-pink-400 text-white font-bold" onClick={goNext}>Next</Button>
             </div>
-        </div>
+        </div >
 
         // <div className="max-w-6xl space-y-8 text-[#E4D7DE]">
         //     <h2 className="text-2xl font-semibold text-pink-400">Home Page</h2>
@@ -176,7 +193,7 @@ const SaveTheDate: React.FC<SaveTheDateProps> = ({
         //                     accept="image/*"
         //                     onChange={(e) => handleImageChange(e.target.files?.[0] || null)}
         //                     className="bg-beige text-black border border-pink-300 w-full"
-        //                     disabled={isSubmitted}
+        //                     disabled={isSubmitted || form?.zipGenerated}
         //                 />
         //                 {form.saveTheDateImage && (
         //                     <div className="mt-4">
@@ -202,7 +219,7 @@ const SaveTheDate: React.FC<SaveTheDateProps> = ({
         //                                 : "bg-transparent text-black border-[#6B5A7A] hover:border-white"
         //                                 }`}
         //                             onClick={() => handleToggle(field)}
-        //                             disabled={isSubmitted}
+        //                             disabled={isSubmitted || form?.zipGenerated}
         //                         >
         //                             {label}
         //                         </Button>
@@ -234,7 +251,7 @@ const SaveTheDate: React.FC<SaveTheDateProps> = ({
         //                         value={form.rsvpSheetUrl}
         //                         onChange={(e) => handleChange("rsvpSheetUrl", e.target.value)}
         //                         className="bg-beige text-black border border-pink-300 px-4 py-2 w-full"
-        //                         disabled={isSubmitted}
+        //                         disabled={isSubmitted || form?.zipGenerated}
         //                     />
         //                 </div>
         //             )}

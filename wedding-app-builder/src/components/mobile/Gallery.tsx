@@ -24,7 +24,7 @@ export default function Gallery({ form, handleChange }: any) {
                         onChange={(e) => handleChange("galleryDriveUrl", e.target.value)}
                         className="bg-beige text-black border border-pink-300 px-4 py-2"
                         style={{ width: "550px" }}
-                        disabled={isSubmitted}
+                        disabled={isSubmitted || form?.zipGenerated}
                     />
                 </div>
             )}

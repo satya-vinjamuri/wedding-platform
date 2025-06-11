@@ -102,27 +102,31 @@ export default function Home() {
 
 
 
-    useEffect(() => {
-        if (!user) return;
+    // useEffect(() => {
+    //     if (!user) return;
 
-        const shouldSave = () => {
-            // Check that at least some essential fields are filled
-            return (
-                form.brideName.trim() !== "" ||
-                form.groomName.trim() !== "" ||
-                form.weddingDate.trim() !== "" ||
-                form.appName.trim() !== ""
-            );
-        };
+    //     const shouldSave = () => {
+    //         // Check that at least some essential fields are filled
+    //         return (
+    //             form.brideName.trim() !== "" ||
+    //             form.groomName.trim() !== "" ||
+    //             form.weddingDate.trim() !== "" ||
+    //             form.appName.trim() !== ""
+    //         );
+    //     };
 
-        const interval = setInterval(() => {
-            if (shouldSave() && !form.isSubmitted) {
-                saveFormToFirestore(user, form).catch(console.error);
-            }
-        }, 5 * 60 * 1000);
+    //     const interval = setInterval(() => {
+    //         if (
+    //             shouldSave() &&
+    //             !form.isSubmitted
+    //         ) {
+    //             saveFormToFirestore(user, form).catch(console.error);
+    //         }
+    //     }, 5 * 60 * 1000);
 
-        return () => clearInterval(interval);
-    }, [user, form]);
+    //     return () => clearInterval(interval);
+    // }, [user, form]);
+
 
     const handleChange = (field: string, value: string | boolean) => {
         if (!isSubmitted) setForm(prev => ({ ...prev, [field]: value }));
@@ -159,6 +163,7 @@ export default function Home() {
         }
     };
 
+    console.log(form);
     return (
         <main className="min-h-screen bg-[#FFF5F7] text-[#4B2E2E] flex flex-col lg:flex-row">
             <div className="pb-10">
@@ -315,7 +320,7 @@ export default function Home() {
                                         required
                                         className="w-full max-w-md bg-beige text-black border border-pink-300 px-4 py-2" value={form.brideName}
                                         onChange={(e) => handleChange("brideName", e.target.value)}
-                                        disabled={isSubmitted}
+                                        disabled={isSubmitted || form?.zipGenerated}
                                     />
                                 </div>
 
@@ -326,7 +331,7 @@ export default function Home() {
                                         required
                                         className="w-full max-w-md bg-beige text-black border border-pink-300 px-4 py-2" value={form.groomName}
                                         onChange={(e) => handleChange("groomName", e.target.value)}
-                                        disabled={isSubmitted}
+                                        disabled={isSubmitted || form?.zipGenerated}
                                     />
                                 </div>
                             </div>
@@ -352,7 +357,7 @@ export default function Home() {
                                 className="w-full max-w-md bg-beige text-black border border-pink-300 px-4 py-2"
                                 value={form.appName}
                                 onChange={(e) => handleChange("appName", e.target.value)}
-                                disabled={isSubmitted}
+                                disabled={isSubmitted || form?.zipGenerated}
                             />
 
                             <div className="font-bold text-lg pb-6 pt-6">
@@ -385,7 +390,7 @@ export default function Home() {
                                             type="checkbox"
                                             checked={!!form[field]}
                                             onChange={() => handleToggle(field)}
-                                            disabled={isSubmitted}
+                                            disabled={isSubmitted || form?.zipGenerated}
                                             className="form-checkbox h-5 w-5 text-pink-500"
                                         />
                                         {label}
@@ -425,7 +430,7 @@ export default function Home() {
                     <Themes form={form} handleChange={handleChange} goNext={goNext} goBack={goBack} />
                 )}
                 {sidebarItems[step]?.key === "preview" && (
-                    <Preview form={form} goBack={goBack} navigateToSection={(key) => {
+                    <Preview form={form} goBack={goBack} isSubmitted={form.isSubmitted} navigateToSection={(key) => {
                         const index = sidebarItems.findIndex((item) => item.key === key);
                         if (index !== -1) setStep(index);
                     }}

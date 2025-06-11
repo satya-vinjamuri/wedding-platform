@@ -8,6 +8,14 @@ export interface EventDetails {
     dressCode: string;
 }
 
+export interface StorySection {
+    title: string;
+    paragraph: string;
+    image: File | null;
+    imageUrl?: string;
+}
+
+
 export interface PartyMember {
     name: string;
     role: string;
@@ -36,13 +44,7 @@ export interface FormState {
 
     // Story
     enableStory: boolean;
-
-    storySections?: {
-        title: string;
-        paragraph: string;
-        image: File | null;
-    }[];
-
+    storySections?: StorySection[];
 
     // Travel
     enableTravel: boolean;
@@ -93,6 +95,7 @@ export interface FormState {
 
     // Submission State
     isSubmitted: boolean;
+    zipGenerated?: boolean;
 }
 
 export const defaultFormState: FormState = {

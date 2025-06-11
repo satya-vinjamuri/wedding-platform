@@ -27,14 +27,15 @@ const db = getFirestore();
 type Props = {
     form: FormState;
     goBack: () => void;
+    isSubmitted: boolean;
     navigateToSection: (sectionId: string) => void; // 🆕
 
 };
 
-export default function Preview({ form, goBack, navigateToSection }: Props) {
+export default function Preview({ form, goBack, navigateToSection, isSubmitted }: Props) {
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState("home");
-    const [isSubmitted, setIsSubmitted] = useState(false);
+    //const [isSubmitted, setIsSubmitted] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showErrorModal, setShowErrorModal] = useState(false);
@@ -45,7 +46,7 @@ export default function Preview({ form, goBack, navigateToSection }: Props) {
             if (!user) return;
             const docRef = doc(db, "weddingApps", user.uid);
             const snap = await getDoc(docRef);
-            if (snap.exists() && snap.data().zipGenerated) setIsSubmitted(true);
+            if (snap.exists() && snap.data().zipGenerated) isSubmitted = true;
         };
         checkSubmissionStatus();
     }, [user]);
@@ -60,7 +61,7 @@ export default function Preview({ form, goBack, navigateToSection }: Props) {
 
         try {
             await saveFormToFirestore(user, form);
-            setIsSubmitted(true);
+            isSubmitted = true;
 
             const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/generate-app`, {
                 method: "POST",
@@ -77,7 +78,7 @@ export default function Preview({ form, goBack, navigateToSection }: Props) {
             const downloadURL = await getDownloadURL(storageRef);
 
             await setDoc(doc(db, "weddingApps", user.uid), {
-                ...form,
+                // ...form,
                 isSubmitted: true,
                 zipGenerated: true,
                 formCompleted: true,
@@ -138,9 +139,9 @@ export default function Preview({ form, goBack, navigateToSection }: Props) {
             </div>
 
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-center gap-12">
-                <div className="relative shadow-2xl rounded-[40px] w-[300px] h-[600px] overflow-hidden border-[6px] border-gray-200 text-black" style={{ backgroundColor: form.selectedColor }}>
+                <div className="relative shadow-2xl rounded-[40px] w-[300px] h-[600px] overflow-hidden scrollbar-hide border-[6px] border-gray-200 text-black" style={{ backgroundColor: form.selectedColor }}>
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-24 h-4 bg-gray-300 rounded-b-xl z-10" />
-                    <div className="p-6 pt-8 overflow-y-auto pb-20 h-full">
+                    <div className="p-6 pt-8 overflow-y-scroll scrollbar-hide pb-20 max-h-[600px]">
                         <AppPreviewRenderer form={form} activeTab={activeTab} setActiveTab={setActiveTab} />
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 bg-neutral-100 p-2 rounded-b-[40px] flex justify-around text-xs border-t">
@@ -159,7 +160,7 @@ export default function Preview({ form, goBack, navigateToSection }: Props) {
 
                 <div className="flex flex-col items-center gap-4 pb-12">
                     <h2 className="text-2xl font-semibold text-black">{form.appName}</h2>
-                    <Button className="w-[200px] bg-pink-400 text-white font-bold" onClick={() => setShowConfirmModal(true)} disabled={isSubmitted}>
+                    <Button className="w-[200px] bg-pink-400 text-white font-bold" onClick={() => setShowConfirmModal(true)} disabled={isSubmitted || form?.zipGenerated}>
                         {isSubmitted ? "Submitted" : "Build My App"}
                     </Button>
                     <Button variant="outline" className="w-[200px] font-bold" onClick={goBack}>
@@ -249,6 +250,6 @@ export default function Preview({ form, goBack, navigateToSection }: Props) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 }

@@ -89,7 +89,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                             <select
                                 value={faq.question}
                                 onChange={(e) => updateFAQ(index, "question", e.target.value)}
-                                disabled={isSubmitted}
+                                disabled={isSubmitted || form?.zipGenerated}
                                 className="bg-white text-cocoa border border-mauve px-3 py-2 rounded w-full"
                             >
                                 <option value="">Select a common question</option>
@@ -108,7 +108,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                                     value={faq.customQuestion || ""}
                                     onChange={(e) => updateFAQ(index, "customQuestion", e.target.value)}
                                     className="bg-white text-cocoa border border-mauve w-full"
-                                    disabled={isSubmitted}
+                                    disabled={isSubmitted || form?.zipGenerated}
                                 />
                             )}
                         </div>
@@ -118,7 +118,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                             value={faq.answer}
                             onChange={(e) => updateFAQ(index, "answer", e.target.value)}
                             className="bg-white text-cocoa border border-mauve"
-                            disabled={isSubmitted}
+                            disabled={isSubmitted || form?.zipGenerated}
                         />
 
                     </div>
@@ -140,7 +140,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                             value={contact.name}
                             onChange={(e) => updateContact(index, "name", e.target.value)}
                             className="bg-white text-cocoa border border-mauve"
-                            disabled={isSubmitted}
+                            disabled={isSubmitted || form?.zipGenerated}
                         />
                         <Input
                             type="text"
@@ -148,7 +148,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                             value={contact.phone}
                             onChange={(e) => updateContact(index, "phone", e.target.value)}
                             className="bg-white text-cocoa border border-mauve"
-                            disabled={isSubmitted}
+                            disabled={isSubmitted || form?.zipGenerated}
                         />
                         {!isSubmitted && (
                             <button
@@ -186,7 +186,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                             checked={form.enablePassword || false}
                             onChange={(e) => handleChange("enablePassword", e.target.checked)}
                             className="w-4 h-4"
-                            disabled={isSubmitted}
+                            disabled={isSubmitted || form?.zipGenerated}
                         />
                         <label htmlFor="enablePassword" className="text-cocoa">
                             Enable password for app access
@@ -202,7 +202,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                                 value={form.appPassword || ""}
                                 onChange={(e) => handleChange("appPassword", e.target.value)}
                                 className="mt-1 bg-white text-cocoa border border-mauve"
-                                disabled={isSubmitted}
+                                disabled={isSubmitted || form?.zipGenerated}
                             />
                         </div>
                     )}
@@ -225,7 +225,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                             checked={form.enableAdminPassword || false}
                             onChange={(e) => handleChange("enableAdminPassword", e.target.checked)}
                             className="w-4 h-4"
-                            disabled={isSubmitted}
+                            disabled={isSubmitted || form?.zipGenerated}
                         />
                         <label htmlFor="enableAdminPassword" className="text-cocoa">
                             Enable password for administrator access
@@ -241,7 +241,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                                 value={form.adminAppPassword || ""}
                                 onChange={(e) => handleChange("adminAppPassword", e.target.value)}
                                 className="mt-1 bg-white text-cocoa border border-mauve"
-                                disabled={isSubmitted}
+                                disabled={isSubmitted || form?.zipGenerated}
                             />
                         </div>
                     )}
@@ -249,7 +249,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                 <Notifications form={form} handleChange={handleChange as (field: string, value: any) => void} />
             </div>
 
-            <div className="flex justify-start gap-4 pt-4">
+            <div className="flex justify-start gap-4 pt-4 pb-4">
                 <Button variant="outline" className="font-bold" onClick={goBack}>
                     Back
                 </Button>
@@ -257,7 +257,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                     Next
                 </Button>
             </div>
-        </div>
+        </div >
     );
 };
 
@@ -341,13 +341,13 @@ export default Settings;
 //                             placeholder="Question"
 //                             value={faq.question}
 //                             onChange={(e) => updateFAQ(index, "question", e.target.value)}
-//                             disabled={isSubmitted}
+//                             disabled={isSubmitted || form?.zipGenerated}
 //                         />
 //                         <Textarea
 //                             placeholder="Answer"
 //                             value={faq.answer}
 //                             onChange={(e) => updateFAQ(index, "answer", e.target.value)}
-//                             disabled={isSubmitted}
+//                             disabled={isSubmitted || form?.zipGenerated}
 //                         />
 //                         {!isSubmitted && (
 //                             <Button
@@ -377,14 +377,14 @@ export default Settings;
 //                             placeholder="Name"
 //                             value={contact.name}
 //                             onChange={(e) => updateContact(index, "name", e.target.value)}
-//                             disabled={isSubmitted}
+//                             disabled={isSubmitted || form?.zipGenerated}
 //                         />
 //                         <Input
 //                             type="text"
 //                             placeholder="Phone Number"
 //                             value={contact.phone}
 //                             onChange={(e) => updateContact(index, "phone", e.target.value)}
-//                             disabled={isSubmitted}
+//                             disabled={isSubmitted || form?.zipGenerated}
 //                         />
 //                         {!isSubmitted && (
 //                             <Button
@@ -423,7 +423,7 @@ export default Settings;
 //                             checked={form.enablePassword || false}
 //                             onChange={(e) => handleChange("enablePassword", e.target.checked)}
 //                             className="w-4 h-4"
-//                             disabled={isSubmitted}
+//                             disabled={isSubmitted || form?.zipGenerated}
 //                         />
 //                         <label htmlFor="enablePassword" className="text-white-500">
 //                             Enable password for app access
@@ -439,7 +439,7 @@ export default Settings;
 //                                 value={form.appPassword || ""}
 //                                 onChange={(e) => handleChange("appPassword", e.target.value)}
 //                                 className="mt-1"
-//                                 disabled={isSubmitted}
+//                                 disabled={isSubmitted || form?.zipGenerated}
 //                             />
 //                         </div>
 //                     )}
@@ -462,7 +462,7 @@ export default Settings;
 //                             checked={form.enableAdminPassword || false}
 //                             onChange={(e) => handleChange("enableAdminPassword", e.target.checked)}
 //                             className="w-4 h-4"
-//                             disabled={isSubmitted}
+//                             disabled={isSubmitted || form?.zipGenerated}
 //                         />
 //                         <label htmlFor="enableAdminPassword" className="text-white-500">
 //                             Enable password for administrator access
@@ -478,7 +478,7 @@ export default Settings;
 //                                 value={form.adminAppPassword || ""}
 //                                 onChange={(e) => handleChange("adminAppPassword", e.target.value)}
 //                                 className="mt-1"
-//                                 disabled={isSubmitted}
+//                                 disabled={isSubmitted || form?.zipGenerated}
 //                             />
 //                         </div>
 //                     )}

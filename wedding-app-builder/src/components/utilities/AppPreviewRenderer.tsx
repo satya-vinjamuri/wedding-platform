@@ -54,6 +54,19 @@ export default function AppPreviewRenderer({ form, activeTab, setActiveTab }: Pr
                     <p className="text-xl font-bold py-6">SAVE THE DATE</p>
                     <p className="text-lg font-bold">Join us for the wedding of</p>
                     <p className="text-xl font-bold">{form.brideName} & {form.groomName}</p>
+                    {(form.saveTheDateImage || form.saveTheDateImageUrl) && (
+                        <div className="flex justify-center">
+                            <img
+                                src={
+                                    form.saveTheDateImage
+                                        ? URL.createObjectURL(form.saveTheDateImage)
+                                        : form.saveTheDateImageUrl
+                                }
+                                alt="Save the Date"
+                                className="w-48 h-auto rounded border mt-2"
+                            />
+                        </div>
+                    )}
                     <p className="text-lg">
                         {new Date(form.weddingDate).toLocaleDateString("en-US", {
                             weekday: "long",
@@ -63,15 +76,6 @@ export default function AppPreviewRenderer({ form, activeTab, setActiveTab }: Pr
                         })}
                     </p>
                     <p className="text-xl">{form.weddingLocation}</p>
-                    {form.saveTheDateImage && (
-                        <div className="flex justify-center">
-                            <img
-                                src={URL.createObjectURL(form.saveTheDateImage)}
-                                alt="Save the Date Preview"
-                                className="w-32 h-32 object-cover rounded"
-                            />
-                        </div>
-                    )}
                     {form.enableRSVP && (
                         <div className="flex justify-center">
                             <Button className="bg-black text-white" onClick={() => setActiveTab("rsvp")}>RSVP</Button>
@@ -223,7 +227,7 @@ export default function AppPreviewRenderer({ form, activeTab, setActiveTab }: Pr
 
         case "itinerary":
             return (
-                <div className="text-sm px-4 py-6 space-y-6" style={sectionStyle}>
+                <div className="text-sm px-4 py-6 space-y-6 overflow-y-scroll scrollbar-hide" style={sectionStyle}>
                     {(["brideEvents", "groomEvents", "weddingEvents"] as const).map((key) => {
                         const events = form[key];
                         if (!events || events.length === 0) return null;
