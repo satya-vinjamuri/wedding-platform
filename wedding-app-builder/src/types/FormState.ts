@@ -1,3 +1,14 @@
+export interface Notification {
+    id: string;
+    title: string;
+    message: string;
+    date: string;
+    type: "WeddingEvents" | "RSVP" | "PlannerOrCoupleUpdates";
+    relatedEventId?: string;
+}
+
+
+
 export interface EventDetails {
     id: string;
     name: string;
@@ -89,6 +100,8 @@ export interface FormState {
     enableRegistry: boolean;
     enableRSVPNotification: boolean;
     enableEventNotification: boolean;
+    //notifications
+    notifications?: Notification[], // <- Add this    
     enablePlannerUpdates: boolean;
     rsvpDeadline?: string;
     registries: { label: string; url: string }[];

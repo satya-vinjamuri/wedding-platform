@@ -246,16 +246,18 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                         </div>
                     )}
                 </div>
-                <Notifications form={form} handleChange={handleChange as (field: string, value: any) => void} />
-            </div>
+                <div className="w-full">
+                    <Notifications form={form} handleChange={handleChange as (field: string, value: any) => void} />
+                </div>
 
-            <div className="flex justify-start gap-4 pt-4 pb-4">
-                <Button variant="outline" className="font-bold" onClick={goBack}>
-                    Back
-                </Button>
-                <Button className="bg-pink-400 text-white font-bold" onClick={goNext}>
-                    Next
-                </Button>
+                <div className="flex justify-start gap-4 pb-4">
+                    <Button variant="outline" className="font-bold" onClick={goBack}>
+                        Back
+                    </Button>
+                    <Button className="bg-pink-400 text-white font-bold" onClick={goNext}>
+                        Next
+                    </Button>
+                </div>
             </div>
         </div >
     );

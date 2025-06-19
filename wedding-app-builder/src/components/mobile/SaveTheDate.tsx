@@ -139,20 +139,61 @@ const SaveTheDate: React.FC<SaveTheDateProps> = ({
                     {form.enableRSVP && (
                         <div>
                             <div className="flex items-center gap-2">
-                                <Label className="text-black font-bold text-lg pb-6 pt-6">RSVP Google Sheet Link</Label>
+                                {/* ✅ 1. Updated Label */}
+                                <Label className="text-black font-bold text-lg pb-6 pt-6 flex items-center gap-2">
+                                    RSVP Link (Google Sheets Only)
+                                    {/* ✅ 6. Google Sheets Icon */}
+                                    <img
+                                        src="https://www.gstatic.com/images/icons/material/system/1x/description_black_24dp.png"
+                                        alt="Google Sheets"
+                                        className="w-4 h-4"
+                                    />
+                                </Label>
+
+                                {/* ✅ 4. Popover Help Tooltip */}
                                 <div className="relative group cursor-pointer">
                                     <span className="text-white bg-gray-500 rounded-full px-2 text-xs font-bold">?</span>
-                                    <div className="absolute z-10 hidden group-hover:block w-64 p-2 bg-black text-white text-sm rounded shadow-lg top-full mt-1">
-                                        Paste a link to your RSVP Google Sheet. Make sure it's set to “Anyone with the link can view”.
+                                    <div className="absolute z-10 hidden group-hover:block w-80 p-3 bg-black text-white text-sm rounded shadow-lg top-full mt-1">
+                                        Paste a link to your RSVP Google Sheet.<br />
+                                        ✅ Must be a Google Sheet URL<br />
+                                        ✅ Set sharing to "Anyone with the link can view"<br /><br />
+
+                                        <strong>Event Code Key:</strong><br />
+                                        E = Everything<br />
+                                        W = Wedding Ceremony<br />
+                                        R = Reception<br />
+                                        S = Sangeet<br />
+                                        M = Mehndi<br />
+                                        BH = Bride's Haldi<br />
+                                        GH = Groom's Haldi<br /><br />
+
+                                        📄 Example: <em>WRSM</em> = Wedding, Reception, Sangeet, Mehndi<br /><br />
+
+                                        <a
+                                            href="/sample-rsvp-template.csv"
+                                            download
+                                            className="underline text-pink-300 hover:text-pink-100"
+                                        >
+                                            Download RSVP Template
+                                        </a>
                                     </div>
+
                                 </div>
                             </div>
+
+                            {/* ✅ 2. Placeholder Guidance, ✅ 3. Validation-ready */}
                             <Input
+                                placeholder="e.g. https://docs.google.com/spreadsheets/d/your-sheet-id"
                                 value={form.rsvpSheetUrl}
                                 onChange={(e) => handleChange("rsvpSheetUrl", e.target.value)}
                                 className="bg-beige text-black border border-pink-300 px-4 py-2 w-full"
                                 disabled={isSubmitted || form?.zipGenerated}
                             />
+
+                            {/* Optional: Validation message if needed */}
+                            {form.rsvpSheetUrl && !form.rsvpSheetUrl.includes("docs.google.com/spreadsheets") && (
+                                <p className="text-sm text-red-600 mt-2">Please enter a valid Google Sheets URL.</p>
+                            )}
                         </div>
                     )}
 
@@ -178,92 +219,6 @@ const SaveTheDate: React.FC<SaveTheDateProps> = ({
                 <Button className="bg-pink-400 text-white font-bold" onClick={goNext}>Next</Button>
             </div>
         </div >
-
-        // <div className="max-w-6xl space-y-8 text-[#E4D7DE]">
-        //     <h2 className="text-2xl font-semibold text-pink-400">Home Page</h2>
-
-        //     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-        //         {/* Left Column */}
-        //         <div className="space-y-8">
-        //             <div>
-        //                 <h2 className="text-2xl font-semibold text-black">Save the Date</h2>
-        //                 <Label className="text-black pb-6 pt-6 font-bold text-lg">Upload an Image</Label>
-        //                 <Input
-        //                     type="file"
-        //                     accept="image/*"
-        //                     onChange={(e) => handleImageChange(e.target.files?.[0] || null)}
-        //                     className="bg-beige text-black border border-pink-300 w-full"
-        //                     disabled={isSubmitted || form?.zipGenerated}
-        //                 />
-        //                 {form.saveTheDateImage && (
-        //                     <div className="mt-4">
-        //                         <p className="text-black font-medium">Current Image:</p>
-        //                         <img
-        //                             src={URL.createObjectURL(form.saveTheDateImage)}
-        //                             alt="Selected"
-        //                             className="w-48 h-auto rounded border mt-2"
-        //                         />
-        //                     </div>
-        //                 )}
-        //             </div>
-
-        //             <Label className="text-black font-semibold text-lg">
-        //                 Optional Home Screen Feature
-        //             </Label>
-        //             <div className="flex flex-wrap gap-4 s">
-        //                 {screenToggles.map(({ label, field, tooltip }) => (
-        //                     <div key={field} className="relative group">
-        //                         <Button
-        //                             className={`px-4 py-2 rounded-full border text-sm font-bold transition ${form[field]
-        //                                 ? "bg-pink-400 text-white border-white"
-        //                                 : "bg-transparent text-black border-[#6B5A7A] hover:border-white"
-        //                                 }`}
-        //                             onClick={() => handleToggle(field)}
-        //                             disabled={isSubmitted || form?.zipGenerated}
-        //                         >
-        //                             {label}
-        //                         </Button>
-        //                         <div className="absolute z-10 hidden group-hover:block w-32 p-2 bg-gray-500 text-white text-xs rounded shadow-lg top-full left-1/2 -translate-x-1/2 mt-1 text-center">
-        //                             {tooltip}
-        //                         </div>
-        //                     </div>
-        //                 ))}
-        //             </div>
-
-        //             {form.enableStory && <OurStory form={form} setForm={setForm} />}
-
-        //         </div>
-
-        //         {/* Right Column */}
-        //         <div className="space-y-12 py-8">
-        //             {form.enableRSVP && (
-        //                 <div>
-        //                     <div className="flex items-center gap-2">
-        //                         <Label className="text-black font-bold text-lg pb-6 pt-6">RSVP Google Sheet Link</Label>
-        //                         <div className="relative group cursor-pointer">
-        //                             <span className="text-white bg-gray-500 rounded-full px-2 text-xs font-bold">?</span>
-        //                             <div className="absolute z-10 hidden group-hover:block w-64 p-2 bg-black text-white text-sm rounded shadow-lg top-full mt-1">
-        //                                 Paste a link to your RSVP Google Sheet. Make sure it's set to “Anyone with the link can view”.
-        //                             </div>
-        //                         </div>
-        //                     </div>
-        //                     <Input
-        //                         value={form.rsvpSheetUrl}
-        //                         onChange={(e) => handleChange("rsvpSheetUrl", e.target.value)}
-        //                         className="bg-beige text-black border border-pink-300 px-4 py-2 w-full"
-        //                         disabled={isSubmitted || form?.zipGenerated}
-        //                     />
-        //                 </div>
-        //             )}
-        //             {form.enableGallery && <Gallery form={form} setForm={setForm} />}
-        //         </div>
-        //     </div>
-
-        //     <div className="flex justify-start gap-4 pt-12 pb-4">
-        //         <Button variant="outline" onClick={goBack} className="text-black font-bold">Back</Button>
-        //         <Button className="bg-pink-400 text-white font-bold" onClick={goNext}>Next</Button>
-        //     </div>
-        // </div>
 
     );
 };

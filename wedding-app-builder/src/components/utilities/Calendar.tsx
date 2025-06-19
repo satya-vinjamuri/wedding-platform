@@ -18,8 +18,12 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
 import type { EventDetails, FormState } from "@/types/FormState";
+import { generateEventNotification } from "@/lib/generateEventNotification";
+import { Notification } from "@/types/FormState";
 
 const localizer = momentLocalizer(moment);
+
+
 
 type CalendarEvent = {
     id: string;
@@ -43,6 +47,7 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
     const [modalOpen, setModalOpen] = useState(false);
     const [slotInfo, setSlotInfo] = useState<{ start: Date; end: Date } | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
 
     const [eventTitle, setEventTitle] = useState("");
     const [eventType, setEventType] = useState<CalendarEvent["type"]>("weddingEvents");
@@ -127,16 +132,20 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-    const parseTime = (date: Date, timeStr: string): Date => {
+    const parseTime = (date: Date, timeStr?: string): Date => {
+        if (!timeStr) return date; // or throw an error or return a fallback value
+
         const [time, modifier] = timeStr.split(" ");
         let [hours, minutes] = time.split(":").map(Number);
+
         if (modifier === "PM" && hours < 12) hours += 12;
         if (modifier === "AM" && hours === 12) hours = 0;
 
-        const result = new Date(date);
-        result.setHours(hours, minutes, 0, 0);
-        return result;
+        const newDate = new Date(date);
+        newDate.setHours(hours, minutes);
+        return newDate;
     };
+
 
     const eventStyleGetter = (event: CalendarEvent) => {
         let backgroundColor = "#38a169"; // default green for wedding
@@ -214,6 +223,21 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
             updatedForm.weddingLocation = eventLocation;
         }
 
+        // inside handleAddOrUpdateEvent
+        const notification = generateEventNotification(
+            id,
+            eventTitle,
+            slotInfo.start,
+            eventTime
+        );
+
+        setNotifications((prev) => [...prev, notification]);
+        const updatedNotifications = editingId
+            ? (form.notifications || []).filter((n) => n.relatedEventId !== id)
+            : form.notifications || [];
+
+        updatedForm.notifications = [...updatedNotifications, notification];
+
         setForm(updatedForm);
 
         console.log(form)
@@ -238,6 +262,7 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
             ...prevForm,
             [type]: updatedEvents,
         }));
+        setModalOpen(false);
         console.log("updatee form", form.weddingEvents);
     };
 
@@ -304,7 +329,7 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
             <div className="w-full overflow-x-auto">
                 <BigCalendar
                     localizer={localizer}
-                    selectable={form.isSubmitted}
+                    selectable={!form.isSubmitted}
                     events={events}
                     startAccessor="start"
                     endAccessor="end"
