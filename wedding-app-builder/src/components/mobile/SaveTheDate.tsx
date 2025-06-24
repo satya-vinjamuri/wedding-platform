@@ -170,11 +170,11 @@ const SaveTheDate: React.FC<SaveTheDateProps> = ({
                                         📄 Example: <em>WRSM</em> = Wedding, Reception, Sangeet, Mehndi<br /><br />
 
                                         <a
-                                            href="/sample-rsvp-template.csv"
-                                            download
+                                            href="https://docs.google.com/spreadsheets/d/14ix2DR7w22KQIswNKK5AAA4T5XYaFeQq5W6_G1wCPNg/edit?usp=sharing"
+                                            target="_blank"
                                             className="underline text-pink-300 hover:text-pink-100"
                                         >
-                                            Download RSVP Template
+                                            View RSVP Template
                                         </a>
                                     </div>
 
@@ -198,9 +198,9 @@ const SaveTheDate: React.FC<SaveTheDateProps> = ({
                     )}
 
                     {/* Gallery Google Drive */}
-                    {form.enableGallery && (
+                    {/* {form.enableGallery && (
                         <Gallery form={form} setForm={setForm} />
-                    )}
+                    )} */}
                 </div>
             </div>
 
