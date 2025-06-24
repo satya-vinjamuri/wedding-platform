@@ -11,7 +11,7 @@ export const requiredScreens: ScreenToggle[] = [
 
 export const screenToggles: ScreenToggle[] = [
     { label: "Our Story", field: "enableStory" },
-    { label: "Gallery", field: "enableGallery" },
+    //{ label: "Gallery", field: "enableGallery" },
     { label: "Wedding Party", field: "enableWeddingParty" },
     { label: "Wedding Registry", field: "enableRegistry" },
     { label: "Travel", field: "enableTravel" },

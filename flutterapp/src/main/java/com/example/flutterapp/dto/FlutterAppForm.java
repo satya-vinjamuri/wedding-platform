@@ -27,4 +27,20 @@ public class FlutterAppForm {
     public Map<String, List<Map<String, String>>> familyDetails;
     public Map<String, List<Map<String, String>>> weddingParty;
     public List<Map<String, String>> registries;
+
+    public Boolean getToggle(String key) {
+        switch (key) {
+            case "enableFamily":
+                return enableFamily;
+            case "enableGallery":
+                return enableGallery;
+            case "enableItinerary":
+                return enableItinerary;
+            case "enableSettings":
+                return enableSettings;
+            default:
+                return false;
+        }
+    }
+
 }

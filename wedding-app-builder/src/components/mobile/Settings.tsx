@@ -12,6 +12,7 @@ import Notifications from "./Notifications";
 interface FAQItem {
     question: string;
     answer: string;
+    customQuestion: string;
 }
 
 interface ContactInfo {
@@ -72,30 +73,54 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                 <Label className="text-mauve pb-2 text-lg font-semibold">FAQs</Label>
                 {(form.faqs || []).map((faq, index) => (
                     <div key={index} className="relative p-4 rounded-md border border-mauve bg-petal mb-4 space-y-2">
-                        <Input
-                            type="text"
-                            placeholder="Question"
-                            value={faq.question}
-                            onChange={(e) => updateFAQ(index, "question", e.target.value)}
-                            className="bg-white text-cocoa border border-mauve"
-                            disabled={isSubmitted}
-                        />
+
+                        {!isSubmitted && (
+                            <Button
+                                onClick={() => removeFAQ(index)}
+                                className="absolute top-1 left-1 text-red-500 hover:text-red-700"
+                                aria-label="Remove FAQ"
+                            >
+                                <X size={16} />
+                            </Button>
+                        )}
+                        <br />
+                        <div className="space-y-2">
+
+                            <select
+                                value={faq.question}
+                                onChange={(e) => updateFAQ(index, "question", e.target.value)}
+                                disabled={isSubmitted || form?.zipGenerated}
+                                className="bg-white text-cocoa border border-mauve px-3 py-2 rounded w-full"
+                            >
+                                <option value="">Select a common question</option>
+                                <option value="What time should we arrive?">What time should we arrive?</option>
+                                <option value="Is there a dress code?">Is there a dress code?</option>
+                                <option value="Will there be parking available?">Will there be parking available?</option>
+                                <option value="Are kids allowed?">Are kids allowed?</option>
+                                <option value="What's the venue address?">What's the venue address?</option>
+                                <option value="type your own">My own question</option>
+                            </select>
+
+                            {faq.question === "type your own" && (
+                                <Input
+                                    type="text"
+                                    placeholder="Enter your question..."
+                                    value={faq.customQuestion || ""}
+                                    onChange={(e) => updateFAQ(index, "customQuestion", e.target.value)}
+                                    className="bg-white text-cocoa border border-mauve w-full"
+                                    disabled={isSubmitted || form?.zipGenerated}
+                                />
+                            )}
+                        </div>
+
                         <Textarea
                             placeholder="Answer"
                             value={faq.answer}
                             onChange={(e) => updateFAQ(index, "answer", e.target.value)}
                             className="bg-white text-cocoa border border-mauve"
-                            disabled={isSubmitted}
+                            disabled={isSubmitted || form?.zipGenerated}
                         />
-                        {!isSubmitted && (
-                            <button
-                                onClick={() => removeFAQ(index)}
-                                className="absolute top-2 right-2 text-red-500 hover:text-red-700"
-                                aria-label="Remove FAQ"
-                            >
-                                <X size={16} />
-                            </button>
-                        )}
+
                     </div>
                 ))}
                 {!isSubmitted && (
@@ -115,7 +140,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                             value={contact.name}
                             onChange={(e) => updateContact(index, "name", e.target.value)}
                             className="bg-white text-cocoa border border-mauve"
-                            disabled={isSubmitted}
+                            disabled={isSubmitted || form?.zipGenerated}
                         />
                         <Input
                             type="text"
@@ -123,7 +148,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                             value={contact.phone}
                             onChange={(e) => updateContact(index, "phone", e.target.value)}
                             className="bg-white text-cocoa border border-mauve"
-                            disabled={isSubmitted}
+                            disabled={isSubmitted || form?.zipGenerated}
                         />
                         {!isSubmitted && (
                             <button
@@ -161,7 +186,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                             checked={form.enablePassword || false}
                             onChange={(e) => handleChange("enablePassword", e.target.checked)}
                             className="w-4 h-4"
-                            disabled={isSubmitted}
+                            disabled={isSubmitted || form?.zipGenerated}
                         />
                         <label htmlFor="enablePassword" className="text-cocoa">
                             Enable password for app access
@@ -177,7 +202,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                                 value={form.appPassword || ""}
                                 onChange={(e) => handleChange("appPassword", e.target.value)}
                                 className="mt-1 bg-white text-cocoa border border-mauve"
-                                disabled={isSubmitted}
+                                disabled={isSubmitted || form?.zipGenerated}
                             />
                         </div>
                     )}
@@ -200,7 +225,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                             checked={form.enableAdminPassword || false}
                             onChange={(e) => handleChange("enableAdminPassword", e.target.checked)}
                             className="w-4 h-4"
-                            disabled={isSubmitted}
+                            disabled={isSubmitted || form?.zipGenerated}
                         />
                         <label htmlFor="enableAdminPassword" className="text-cocoa">
                             Enable password for administrator access
@@ -216,23 +241,25 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                                 value={form.adminAppPassword || ""}
                                 onChange={(e) => handleChange("adminAppPassword", e.target.value)}
                                 className="mt-1 bg-white text-cocoa border border-mauve"
-                                disabled={isSubmitted}
+                                disabled={isSubmitted || form?.zipGenerated}
                             />
                         </div>
                     )}
                 </div>
-                <Notifications form={form} handleChange={handleChange as (field: string, value: any) => void} />
-            </div>
+                <div className="w-full">
+                    <Notifications form={form} handleChange={handleChange as (field: string, value: any) => void} />
+                </div>
 
-            <div className="flex justify-start gap-4 pt-4">
-                <Button variant="outline" className="font-bold" onClick={goBack}>
-                    Back
-                </Button>
-                <Button className="bg-pink-400 text-white font-bold" onClick={goNext}>
-                    Next
-                </Button>
+                <div className="flex justify-start gap-4 pb-4">
+                    <Button variant="outline" className="font-bold" onClick={goBack}>
+                        Back
+                    </Button>
+                    <Button className="bg-pink-400 text-white font-bold" onClick={goNext}>
+                        Next
+                    </Button>
+                </div>
             </div>
-        </div>
+        </div >
     );
 };
 
@@ -316,13 +343,13 @@ export default Settings;
 //                             placeholder="Question"
 //                             value={faq.question}
 //                             onChange={(e) => updateFAQ(index, "question", e.target.value)}
-//                             disabled={isSubmitted}
+//                             disabled={isSubmitted || form?.zipGenerated}
 //                         />
 //                         <Textarea
 //                             placeholder="Answer"
 //                             value={faq.answer}
 //                             onChange={(e) => updateFAQ(index, "answer", e.target.value)}
-//                             disabled={isSubmitted}
+//                             disabled={isSubmitted || form?.zipGenerated}
 //                         />
 //                         {!isSubmitted && (
 //                             <Button
@@ -352,14 +379,14 @@ export default Settings;
 //                             placeholder="Name"
 //                             value={contact.name}
 //                             onChange={(e) => updateContact(index, "name", e.target.value)}
-//                             disabled={isSubmitted}
+//                             disabled={isSubmitted || form?.zipGenerated}
 //                         />
 //                         <Input
 //                             type="text"
 //                             placeholder="Phone Number"
 //                             value={contact.phone}
 //                             onChange={(e) => updateContact(index, "phone", e.target.value)}
-//                             disabled={isSubmitted}
+//                             disabled={isSubmitted || form?.zipGenerated}
 //                         />
 //                         {!isSubmitted && (
 //                             <Button
@@ -398,7 +425,7 @@ export default Settings;
 //                             checked={form.enablePassword || false}
 //                             onChange={(e) => handleChange("enablePassword", e.target.checked)}
 //                             className="w-4 h-4"
-//                             disabled={isSubmitted}
+//                             disabled={isSubmitted || form?.zipGenerated}
 //                         />
 //                         <label htmlFor="enablePassword" className="text-white-500">
 //                             Enable password for app access
@@ -414,7 +441,7 @@ export default Settings;
 //                                 value={form.appPassword || ""}
 //                                 onChange={(e) => handleChange("appPassword", e.target.value)}
 //                                 className="mt-1"
-//                                 disabled={isSubmitted}
+//                                 disabled={isSubmitted || form?.zipGenerated}
 //                             />
 //                         </div>
 //                     )}
@@ -437,7 +464,7 @@ export default Settings;
 //                             checked={form.enableAdminPassword || false}
 //                             onChange={(e) => handleChange("enableAdminPassword", e.target.checked)}
 //                             className="w-4 h-4"
-//                             disabled={isSubmitted}
+//                             disabled={isSubmitted || form?.zipGenerated}
 //                         />
 //                         <label htmlFor="enableAdminPassword" className="text-white-500">
 //                             Enable password for administrator access
@@ -453,7 +480,7 @@ export default Settings;
 //                                 value={form.adminAppPassword || ""}
 //                                 onChange={(e) => handleChange("adminAppPassword", e.target.value)}
 //                                 className="mt-1"
-//                                 disabled={isSubmitted}
+//                                 disabled={isSubmitted || form?.zipGenerated}
 //                             />
 //                         </div>
 //                     )}

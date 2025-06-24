@@ -1,3 +1,14 @@
+export interface Notification {
+    id: string;
+    title: string;
+    message: string;
+    date: string;
+    type: "WeddingEvents" | "RSVP" | "PlannerOrCoupleUpdates";
+    relatedEventId?: string;
+}
+
+
+
 export interface EventDetails {
     id: string;
     name: string;
@@ -7,6 +18,14 @@ export interface EventDetails {
     location: string;
     dressCode: string;
 }
+
+export interface StorySection {
+    title: string;
+    paragraph: string;
+    image: File | null;
+    imageUrl?: string;
+}
+
 
 export interface PartyMember {
     name: string;
@@ -36,13 +55,7 @@ export interface FormState {
 
     // Story
     enableStory: boolean;
-
-    storySections?: {
-        title: string;
-        paragraph: string;
-        image: File | null;
-    }[];
-
+    storySections?: StorySection[];
 
     // Travel
     enableTravel: boolean;
@@ -52,7 +65,7 @@ export interface FormState {
 
     // Settings
     enableSettings: boolean;
-    faqs: { question: string; answer: string }[];
+    faqs: { question: string; answer: string, customQuestion: string, }[];
     contactInfo: { name: string; phone: string; email: string }[];
 
     // Wedding Party
@@ -87,12 +100,15 @@ export interface FormState {
     enableRegistry: boolean;
     enableRSVPNotification: boolean;
     enableEventNotification: boolean;
+    //notifications
+    notifications?: Notification[], // <- Add this    
     enablePlannerUpdates: boolean;
     rsvpDeadline?: string;
     registries: { label: string; url: string }[];
 
     // Submission State
     isSubmitted: boolean;
+    zipGenerated?: boolean;
 }
 
 export const defaultFormState: FormState = {

@@ -66,7 +66,7 @@ const Travel: React.FC<TravelProps> = ({ form, setForm, goNext, goBack }) => {
                             onChange={(e) => handleVenueChange(idx, e.target.value)}
                             placeholder={`Venue ${idx + 1}`}
                             className="w-full bg-petal text-cocoa border border-pink-300 pr-10"
-                            disabled={isSubmitted}
+                            disabled={isSubmitted || form?.zipGenerated}
                         />
                         {!isSubmitted && (
                             <button
@@ -79,7 +79,7 @@ const Travel: React.FC<TravelProps> = ({ form, setForm, goNext, goBack }) => {
                         )}
                     </div>
                 ))}
-                <Button onClick={handleAddVenue} className="bg-pink-400 text-white font-bold" disabled={isSubmitted}>
+                <Button onClick={handleAddVenue} className="bg-pink-400 text-white font-bold" disabled={isSubmitted || form?.zipGenerated}>
                     + Add Venue
                 </Button>
             </div>
@@ -93,7 +93,7 @@ const Travel: React.FC<TravelProps> = ({ form, setForm, goNext, goBack }) => {
                             onChange={(e) => handleHotelChange(idx, e.target.value)}
                             placeholder={`Hotel ${idx + 1}`}
                             className="w-full bg-petal text-cocoa border border-pink-300 pr-10"
-                            disabled={isSubmitted}
+                            disabled={isSubmitted || form?.zipGenerated}
                         />
                         {!isSubmitted && (
                             <button
@@ -106,10 +106,10 @@ const Travel: React.FC<TravelProps> = ({ form, setForm, goNext, goBack }) => {
                         )}
                     </div>
                 ))}
-                <Button onClick={handleAddHotel} className="bg-pink-400 text-white font-bold" disabled={isSubmitted}>
+                <Button onClick={handleAddHotel} className="bg-pink-400 text-white font-bold" disabled={isSubmitted || form?.zipGenerated}>
                     + Add Hotel
                 </Button>
-            </div>
+            </div >
 
             <div className="flex justify-start gap-4 pt-12">
                 <Button variant="outline" onClick={goBack} className="font-bold">
@@ -119,7 +119,7 @@ const Travel: React.FC<TravelProps> = ({ form, setForm, goNext, goBack }) => {
                     Next
                 </Button>
             </div>
-        </div>
+        </div >
     );
 };
 

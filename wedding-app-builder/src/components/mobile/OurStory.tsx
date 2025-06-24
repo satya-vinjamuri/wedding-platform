@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { FormState } from "@/types/FormState";
+import { FormState, StorySection } from "@/types/FormState";
 import { X } from "lucide-react";
 
 interface OurStoryProps {
@@ -27,7 +27,7 @@ const storyTitleOptions = [
 ];
 
 const OurStory: React.FC<OurStoryProps> = ({ form, setForm }) => {
-    const isSubmitted = form.isSubmitted;
+    const isSubmitted = form.isSubmitted || form?.zipGenerated;
 
     const handleAddSection = () => {
         setForm((prev) => ({
@@ -38,6 +38,7 @@ const OurStory: React.FC<OurStoryProps> = ({ form, setForm }) => {
                     title: "Our Story",
                     paragraph: "",
                     image: null,
+                    imageUrl: "",
                 },
             ],
         }));
@@ -56,18 +57,17 @@ const OurStory: React.FC<OurStoryProps> = ({ form, setForm }) => {
         index: number,
         field: "title" | "paragraph",
         value: string
-    ): void => {
+    ) => {
         const updated = [...(form.storySections || [])];
         updated[index][field] = value;
         setForm((prev) => ({ ...prev, storySections: updated }));
     };
 
-    const handleImageChange = (index: number, file: File | null): void => {
+    const handleImageChange = (index: number, file: File | null) => {
         const updated = [...(form.storySections || [])];
         updated[index].image = file;
         setForm((prev) => ({ ...prev, storySections: updated }));
     };
-
 
     return (
         <div className="max-w-6xl space-y-8 text-[#E4D7DE]">
@@ -100,7 +100,9 @@ const OurStory: React.FC<OurStoryProps> = ({ form, setForm }) => {
                         <Label className="text-black font-semibold">Section Title</Label>
                         <select
                             value={section.title}
-                            onChange={(e) => handleSectionChange(idx, "title", e.target.value)}
+                            onChange={(e) =>
+                                handleSectionChange(idx, "title", e.target.value)
+                            }
                             disabled={isSubmitted}
                             className="bg-[#FFF5F7] border border-pink-300 rounded px-3 py-2 text-black w-full"
                         >
@@ -133,6 +135,21 @@ const OurStory: React.FC<OurStoryProps> = ({ form, setForm }) => {
                                 className="bg-beige text-black border border-pink-300"
                                 disabled={isSubmitted}
                             />
+
+                            {(section.image || section.imageUrl) && (
+                                <div className="mt-4">
+                                    <p className="text-black font-medium">Current Image:</p>
+                                    <img
+                                        src={
+                                            section.image
+                                                ? URL.createObjectURL(section.image)
+                                                : section.imageUrl
+                                        }
+                                        alt={`Story Section ${idx + 1}`}
+                                        className="w-48 h-auto rounded border mt-2"
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}
