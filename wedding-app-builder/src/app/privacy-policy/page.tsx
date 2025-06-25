@@ -7,34 +7,37 @@ const PrivacyPolicy = () => {
             <h1 className="text-3xl font-bold mb-4 text-white-500">Privacy Policy</h1>
 
             <p className="mb-4">
-                This Privacy Policy outlines how the RSVP app for Neeraj & Jinal’s wedding ("App") treats user information.
-                We are committed to maintaining your privacy and ensuring a safe experience.
+                This Privacy Policy outlines how the RSVP app for Neeraj & Jinal’s wedding ("App") handles user information. We are committed to protecting your privacy and ensuring transparency regarding any data usage.
             </p>
 
             <h2 className="text-xl font-semibold mt-6 mb-2">Information Collection and Use</h2>
             <p className="mb-4">
-                This app does <strong>not</strong> collect, store, or share any personally identifiable information.
-                Guest details (such as name and phone number) are used only for looking up RSVP information from a secure, preloaded guest list and are never stored by the app or transmitted beyond what is necessary for RSVP confirmation.
+                The App may collect limited information for RSVP functionality and user experience improvement. Specifically, user name and phone number are used temporarily to match your invitation. This data is not stored beyond the duration of your session.
             </p>
 
-            <h2 className="text-xl font-semibold mt-6 mb-2">Data Security</h2>
+            <h2 className="text-xl font-semibold mt-6 mb-2">App Tracking Transparency</h2>
             <p className="mb-4">
-                Since we do not collect or retain any personal information, there is no risk of your data being compromised through the app. All interactions are designed to be read-only or ephemeral for RSVP purposes only.
+                In compliance with Apple’s App Tracking Transparency (ATT) framework, this app includes a request for tracking authorization. While we currently do not use advertising identifiers or track user behavior for analytics, this permission is requested to maintain compatibility with certain system-level APIs or future features.
             </p>
 
             <h2 className="text-xl font-semibold mt-6 mb-2">Third-Party Services</h2>
             <p className="mb-4">
-                This app does not integrate with any third-party analytics, advertising, or tracking services.
+                This app does not use third-party advertising networks or analytics platforms. No personal data is shared with third parties for marketing or tracking purposes.
+            </p>
+
+            <h2 className="text-xl font-semibold mt-6 mb-2">Data Security</h2>
+            <p className="mb-4">
+                We implement appropriate security measures to protect any temporary or session-based data. No personal data is permanently stored on your device or transmitted to external servers beyond RSVP confirmation.
+            </p>
+
+            <h2 className="text-xl font-semibold mt-6 mb-2">Your Choices</h2>
+            <p className="mb-4">
+                You may choose to deny tracking permission when prompted. The app will continue to function without limitation regardless of your choice.
             </p>
 
             <h2 className="text-xl font-semibold mt-6 mb-2">Changes to This Privacy Policy</h2>
             <p className="mb-4">
-                We may update this Privacy Policy if necessary (for example, to reflect new functionality). Updates will be reflected on this page with a revised date.
-            </p>
-
-            <h2 className="text-xl font-semibold mt-6 mb-2">Your Acceptance of These Terms</h2>
-            <p className="mb-4">
-                By using this App, you agree to this policy. If you do not agree, please refrain from using the App.
+                We may update this Privacy Policy to reflect changes in functionality or legal requirements. Updates will be reflected on this page with a revised date.
             </p>
 
             <h2 className="text-xl font-semibold mt-6 mb-2">Contact Us</h2>
