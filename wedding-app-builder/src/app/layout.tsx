@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from '@/context/AuthContext';
 import Link from "next/link";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +33,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           {/* ✅ Header placed inside body */}
+          <ToastContainer position="bottom-right" autoClose={3000} />
 
           {/* Main content */}
           <main className="flex-1">{children}</main>

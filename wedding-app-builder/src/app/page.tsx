@@ -69,6 +69,7 @@ export default function HomePage() {
           <Link href="/contact-us">Contact</Link>
         </nav>
         <div className="hidden lg:flex gap-6 items-center font-bold">
+          <Button onClick={() => router.push('/search')} className="font-bold bg-pink-500 text-white px-4 py-2 rounded-md text-sm">Find a Couple</Button>
           <Button className="bg-pink-500 text-white px-4 py-2 rounded-md text-sm font-bold" onClick={() => router.push('/log-in')}>Log in</Button>
           <Button onClick={() => router.push('/log-in')} className="font-bold bg-pink-500 text-white px-4 py-2 rounded-md text-sm">Try it free</Button>
         </div>

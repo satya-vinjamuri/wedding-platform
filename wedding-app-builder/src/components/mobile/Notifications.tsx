@@ -149,7 +149,7 @@ export default function Notifications({
                 </p>
             </div>
 
-            <div className="flex flex-col lg:flex-row gap-4 mt-4">
+            <div className="flex flex-row lg:flex-row gap-4 mt-4">
                 {/* Left: Notification Settings Form */}
                 <div className="bg-petal p-6 rounded-lg text-cocoa space-y-6 w-full lg:w-1/2">
                     <div className="space-y-6">
@@ -195,119 +195,6 @@ export default function Notifications({
                             <span className="text-cocoa font-medium">Wedding Event Notifications</span>
                         </label>
                     </div>
-                </div>
-                <div className="w-full bg-petal p-6 rounded-lg text-cocoa space-y-6">
-                    {/* Planner Updates Checkbox */}
-                    <label className="flex items-center gap-3">
-                        <input
-                            type="checkbox"
-                            checked={form.enablePlannerUpdates}
-                            onChange={(e) =>
-                                handleChange("enablePlannerUpdates", e.target.checked)
-                            }
-                            className="accent-pink-500 w-4 h-4"
-                        />
-                        <span className="text-cocoa font-medium">
-                            Updates from Wedding Planner/Couple
-                        </span>
-                    </label>
-
-                    {/* Custom Notifications */}
-                    {form.enablePlannerUpdates && (
-                        <div>
-                            <label className="block text-sm font-semibold text-cocoa mb-2">
-                                Enter your custom notifications
-                            </label>
-                            {/* Add Notification Button */}
-                            <Button
-                                type="button"
-                                onClick={() =>
-                                    setCustomNotifications((prev) => [
-                                        ...prev,
-                                        {
-                                            title: customNotificationHeader[0],
-                                            message: "",
-                                            customTitle: "",
-                                        },
-                                    ])
-                                }
-                                className="text-pink-500 text-sm font-medium hover:underline"
-                            >
-                                + Add Another Notification
-                            </Button>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {customNotifications.map((notification, index) => (
-                                    <div
-                                        key={index}
-                                        className="relative bg-white rounded-xl border border-pink-200 p-4 shadow-sm h-full flex flex-col"
-                                    >
-                                        {/* Remove Button */}
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setCustomNotifications((prev) =>
-                                                    prev.filter((_, i) => i !== index)
-                                                )
-                                            }
-                                            className="absolute top-2 right-2 text-red-500 hover:text-red-700"
-                                            aria-label="Remove Notification"
-                                        >
-                                            <X size={16} />
-                                        </button>
-
-                                        {/* Title Select */}
-                                        <div className="mb-3">
-                                            <select
-                                                value={notification.title}
-                                                onChange={(e) => {
-                                                    const updated = [...customNotifications];
-                                                    updated[index].title = e.target.value;
-                                                    setCustomNotifications(updated);
-                                                }}
-                                                className="w-full px-3 py-2 border border-mauve rounded-md text-cocoa bg-[#FFF5F7] focus:outline-none focus:ring-2 focus:ring-pink-300"
-                                            >
-                                                {customNotificationHeader.map((title) => (
-                                                    <option key={title} value={title}>
-                                                        {title}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        {/* Optional Custom Title */}
-                                        {notification.title === "Custom no title" && (
-                                            <div className="mb-3">
-                                                <input
-                                                    type="text"
-                                                    placeholder="Enter custom title"
-                                                    value={notification.customTitle || ""}
-                                                    onChange={(e) => {
-                                                        const updated = [...customNotifications];
-                                                        updated[index].customTitle = e.target.value;
-                                                        setCustomNotifications(updated);
-                                                    }}
-                                                    className="w-full px-3 py-2 border border-mauve rounded-md text-cocoa bg-[#FFF5F7] focus:outline-none focus:ring-2 focus:ring-pink-300"
-                                                />
-                                            </div>
-                                        )}
-
-                                        {/* Message Field */}
-                                        <textarea
-                                            placeholder="Notification Message"
-                                            value={notification.message}
-                                            onChange={(e) => {
-                                                const updated = [...customNotifications];
-                                                updated[index].message = e.target.value;
-                                                setCustomNotifications(updated);
-                                            }}
-                                            className="w-full px-3 py-2 border border-mauve rounded-md text-cocoa bg-[#FFF5F7] focus:outline-none focus:ring-2 focus:ring-pink-300 resize-none"
-                                            rows={3}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
 
