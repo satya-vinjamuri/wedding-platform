@@ -31,7 +31,7 @@ export default function Countdown({ weddingDate }: { weddingDate: string }) {
 
     return (
         <div>
-            <p className="text-lg font-semibold text-center">{timeLeft}<br /> until the big day!!</p>
+            <p className="text-lg font-semibold text-center">{timeLeft}<br /> until our big day!!</p>
         </div>
     );
 }

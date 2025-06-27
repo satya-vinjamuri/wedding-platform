@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-//import { generateSlug } from '@/utils/generateSlug'; // ⬅️ Create this util
+import { generateSlug } from '@/lib/generateSlug';
 
 export default function SearchForWeddingSite() {
     const router = useRouter();
@@ -24,13 +24,21 @@ export default function SearchForWeddingSite() {
         setForm(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleSelectChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setForm(prev => ({ ...prev, [name]: value }));
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const { brideName, groomName, weddingMonth, weddingYear } = form;
-        if (!brideName || !groomName || !weddingMonth || weddingYear) return;
+        console.log(brideName, groomName, weddingMonth, weddingYear);
 
-        //const slug = generateSlug(brideName, groomName, weddingMonth, weddingYear);
-        //router.push(`/site/${slug}`);
+        if (!brideName || !groomName || !weddingMonth || !weddingYear) return;
+        const weddingDate = `${weddingYear}-${weddingMonth}`;
+        const slug = generateSlug(brideName, groomName, weddingDate);
+        console.log("slug", slug);
+        router.push(`/site/${slug}`);
     };
 
     return (
@@ -95,7 +103,7 @@ export default function SearchForWeddingSite() {
                         <select
                             name="weddingMonth"
                             value={form.weddingMonth}
-                            //onChange={handleChange}
+                            onChange={handleSelectChange}
                             required
                             className="flex-1 min-w-[120px] bg-white text-black px-4 py-2 rounded-md border border-gray-300"
                         >
@@ -110,7 +118,7 @@ export default function SearchForWeddingSite() {
                         <select
                             name="weddingYear"
                             value={form.weddingYear}
-                            //onChange={handleChange}
+                            onChange={handleSelectChange}
                             required
                             className="flex-1 min-w-[100px] bg-white text-black px-4 py-2 rounded-md border border-gray-300"
                         >

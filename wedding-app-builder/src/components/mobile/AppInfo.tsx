@@ -227,6 +227,7 @@ export default function Home() {
                             <Button
                                 variant="outline"
                                 className="text-black border border-gray-500 hover:bg-gray-100 text-sm font-bold"
+                                onClick={() => { router.push(`/site/${form.websiteSlug}`); }}
                             >
                                 Access My Wedding Website
                             </Button>
