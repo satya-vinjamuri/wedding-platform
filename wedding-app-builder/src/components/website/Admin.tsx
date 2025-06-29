@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import TextBlast from '../utilities/TextBlast';
+import { useRouter } from "next/navigation";
+import { User } from 'lucide-react';
 
 interface EventSummaryItem {
     eventName: string;
@@ -13,11 +15,13 @@ interface EventSummaryItem {
 
 interface AdminProps {
     eventSummary: EventSummaryItem[];
-    refreshRSVP: () => void;
+    refreshRSVP: () => Promise<void>;
     rsvpSheetUrl: string;
+    eventList: any[];
 }
 
-export default function Admin({ eventSummary, rsvpSheetUrl, refreshRSVP }: AdminProps) {
+export default function Admin({ eventSummary, rsvpSheetUrl, refreshRSVP, eventList }: AdminProps) {
+    const router = useRouter();
     const [message, setMessage] = useState('');
     const [sending, setSending] = useState(false);
 
@@ -39,21 +43,21 @@ export default function Admin({ eventSummary, rsvpSheetUrl, refreshRSVP }: Admin
 
     return (
         <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-8 font-serif text-[#1A1A1A]">
-            <h1 className="text-3xl font-extrabold text-[#D14D72]">Couple Settings</h1>
-
-            {/* Text Blast */}
-            <div className="space-y-4">
-                <h2 className="text-xl font-semibold">Send Text Blast</h2>
-                <Textarea
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Enter your message"
-                    className="w-full"
-                />
-                <Button onClick={handleSendTextBlast} disabled={sending} className="w-full sm:w-auto">
-                    {sending ? 'Sending...' : 'Send Text Blast'}
+            <h1 className="text-3xl font-extrabold text-[#D14D72]">Site Settings</h1>
+            <div className="flex justify-end">
+                <Button
+                    variant="outline"
+                    className="text-black border border-gray-500 hover:bg-gray-100 text-sm font-bold"
+                    onClick={() => {
+                        router.push("/designer-settings");
+                    }}
+                >
+                    <User size={16} className="mr-2" /> Account
                 </Button>
             </div>
+
+            {/* Text Blast */}
+            <TextBlast onSend={handleSendTextBlast} groups={eventList} />
 
             {/* RSVP Viewer */}
             <div className="space-y-4">
@@ -62,36 +66,36 @@ export default function Admin({ eventSummary, rsvpSheetUrl, refreshRSVP }: Admin
                     <Button
                         variant="outline"
                         onClick={refreshRSVP}
-                        className="w-full sm:w-auto sm:mx-4 mb-2 sm:mb-0"
+                        className="w-full border border-black sm:w-auto sm:mx-4 mb-2 sm:mb-0"
                     >
                         Refresh RSVP Data
                     </Button>
                     <Button
                         variant="outline"
                         onClick={() => window.open(rsvpSheetUrl, '_blank')}
-                        className="w-full sm:w-auto sm:mx-4"
+                        className="w-full border border-black sm:w-auto sm:mx-4"
                     >
                         View Guest List
                     </Button>
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm border border-gray-200 rounded-md">
-                        <thead className="bg-gray-100">
-                            <tr>
-                                <th className="px-4 py-2 text-left text-pink-700">Event</th>
-                                <th className="px-4 py-2 text-left">Attending</th>
-                                <th className="px-4 py-2 text-left">Not Attending</th>
-                                <th className="px-4 py-2 text-left">No Response</th>
+                    <table className="min-w-full text-sm border border-black rounded-md">
+                        <thead className="bg-gray-100 border-b border-black">
+                            <tr className='border-b border-black'>
+                                <th className="px-4 py-2 text-left text-pink-700 border-r border-black">Event</th>
+                                <th className="px-4 py-2 text-left border-r border-black">Attending</th>
+                                <th className="px-4 py-2 text-left border-r border-black">Not Attending</th>
+                                <th className="px-4 py-2 text-left border-r border-black">No Response</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="border-r border-black">
                             {eventSummary.map((item, idx) => (
-                                <tr key={idx} className="border-t">
-                                    <td className="px-4 py-2 font-medium text-pink-700">{item.eventName}</td>
-                                    <td className="px-4 py-2">{item.confirmed}</td>
-                                    <td className="px-4 py-2">{item.notAttending}</td>
-                                    <td className="px-4 py-2">{item.notResponded}</td>
+                                <tr key={idx} className="border-t border-black">
+                                    <td className="px-4 py-2 font-medium text-pink-700 border-r border-black">{item.eventName}</td>
+                                    <td className="px-4 py-2 border-r border-black">{item.confirmed}</td>
+                                    <td className="px-4 py-2 border-r border-black">{item.notAttending}</td>
+                                    <td className="px-4 py-2 border-r border-black">{item.notResponded}</td>
                                 </tr>
                             ))}
                         </tbody>

@@ -55,7 +55,7 @@ export default function Events({ form }: { form: FormState }) {
 
 
     return (
-        <div className="max-w-6xl mx-auto px-6 py-12 font-serif text-[#1A1A1A] bg-[#FFFBF8] rounded-3xl shadow-md">
+        <div className="max-w-6xl mx-auto px-6 py-12  text-[#1A1A1A] bg-[#FFFBF8] rounded-3xl shadow-md">
             <div className="flex flex-col md:flex-row items-start gap-10">
                 {/* Left side: Event list */}
                 <div className="w-full space-y-10">

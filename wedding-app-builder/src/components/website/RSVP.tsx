@@ -41,13 +41,26 @@ export default function RSVPForm({ rsvpSheetUrl }: { rsvpSheetUrl: string }) {
             );
 
             if (guest) {
-                const events = guest.Events.toString().includes('AllEvents')
-                    ? ['Wedding Ceremony', 'Reception', 'Sangeet', 'Mehndi', 'Bride Haldi', 'Groom Haldi']
+                const eventsResponse = await fetch(`/api/rsvp/events?sheetId=${sheetId}`);
+                const eventsData = await eventsResponse.json();
+                const weddingEvents = eventsData.WeddingEvents;
+
+                let events = guest.Events.toString().includes('AllEvents')
+                    ? weddingEvents
                     : guest.Events.split(',').map((e: string) => e.trim());
+
+                // Remove unwanted placeholders
+                events = events.filter(
+                    (e: string) =>
+                        e.toLowerCase() !== 'allevents' &&
+                        e.toLowerCase() !== 'event' &&
+                        e.trim() !== ''
+                );
+
 
                 const choices: Record<string, string> = {};
                 events.forEach((e: string) => (choices[e] = ''));
-
+                console.log(events);
                 setIsFound(true);
                 setAllowedGuests(parseInt(guest.AllowedGuests));
                 setInvitedEvents(events);
@@ -187,7 +200,17 @@ export default function RSVPForm({ rsvpSheetUrl }: { rsvpSheetUrl: string }) {
                                     ))}
                                 </select>
                             </div>
-
+                            <div>
+                                <input
+                                    type="checkbox"
+                                    required
+                                    id="sms-reminder"
+                                    className="mr-2"
+                                />
+                                <label htmlFor="sms-reminder" className="font-medium">
+                                    I agree to receive wedding reminders and updates via SMS.
+                                </label>
+                            </div>
                             <button
                                 className="w-full bg-pink-600 hover:bg-pink-700 text-white py-3 rounded-md font-bold transition"
                                 onClick={submitRSVP}

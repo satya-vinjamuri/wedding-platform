@@ -8,21 +8,12 @@ import Contact from './Contact';
 import Events from './Events';
 import Admin from './Admin';
 
-const EVENT_CODE_MAP: Record<string, string> = {
-    W: 'Wedding Ceremony',
-    R: 'Reception',
-    S: 'Sangeet',
-    M: 'Mehndi',
-    BH: 'Bride Haldi',
-    GH: 'Groom Haldi',
-    E: 'All Events'
-};
-
 export default function WeddingSiteTabs({ data }: { data: any }) {
     const [activeTab, setActiveTab] = useState("saveTheDate");
     const [menuOpen, setMenuOpen] = useState(false);
     const [rsvpSheetUrl, setRSVPUrl] = useState<string>('');
     const [eventSummary, setEventSummary] = useState<any[]>([]);
+    const [eventList, setEventList] = useState<any[]>([]);
     const { user } = useAuth();
 
     useEffect(() => {
@@ -55,7 +46,6 @@ export default function WeddingSiteTabs({ data }: { data: any }) {
         user && { id: 'admin', label: 'Admin' },
     ].filter(Boolean);
 
-
     const fetchRSVPData = async () => {
         try {
             function extractSheetId(url: string): string | null {
@@ -63,78 +53,100 @@ export default function WeddingSiteTabs({ data }: { data: any }) {
                 return match ? match[1] : null;
             }
 
+            const EVENT_CODE_MAP: Record<string, string> = {
+                W: 'WeddingCeremony',
+                R: 'Reception',
+                S: 'Sangeet',
+                M: 'Mehndi',
+                BH: 'BrideHaldi',
+                GH: 'GroomHaldi',
+                V: "Vidhi",
+                SN: "Snathakam",
+            };
+
             const id = extractSheetId(data.rsvpSheetUrl);
-            const res = await fetch(`/api/rsvp/lookup?sheetId=${id}`);
-            const rawData = await res.json();
+            const eventsResponse = await fetch(`/api/rsvp/events?sheetId=${id}`);
+            const eventsData = await eventsResponse.json();
+            const weddingEvents: string[] = eventsData.WeddingEvents;
 
             const summaryMap: Record<string, { confirmed: number; notResponded: number; notAttending: number }> = {};
 
-            for (const guest of rawData) {
-                const codes = (guest.EventsConfirmed || '').split(',').map((code: string) => code.trim());
-                const status = guest.RSVPStatus;
-                const guestsAttending = parseInt(guest.GuestsAttending, 10) || 0;
-                const allowedGuests = parseInt(guest.AllowedGuests, 10) || 0;
-
-                let expandedCodes = codes.includes('E')
-                    ? Object.keys(EVENT_CODE_MAP).filter(k => k !== 'E')
-                    : codes;
-
-                const missingGuests = allowedGuests - guestsAttending;
-
-                for (const code of expandedCodes) {
-                    const name = EVENT_CODE_MAP[code] || code;
-                    if (!summaryMap[name]) {
-                        summaryMap[name] = { confirmed: 0, notResponded: 0, notAttending: 0 };
-                    }
-
-                    if (status === 'Confirmed') {
-                        summaryMap[name].confirmed += guestsAttending;
-                        if (missingGuests > 0) {
-                            summaryMap[name].notAttending += missingGuests;
-                        }
-                    } else if (status === 'Not Responded') {
-                        summaryMap[name].notResponded += allowedGuests;
-                    } else if (status === 'Not Attending') {
-                        summaryMap[name].notAttending += allowedGuests;
-                    }
-                }
+            for (const eventName of weddingEvents) {
+                summaryMap[eventName] = { confirmed: 0, notResponded: 0, notAttending: 0 };
             }
 
+            const res = await fetch(`/api/rsvp/lookup?sheetId=${id}`);
+            const rawData = await res.json();
 
-            const summaryArray = Object.entries(summaryMap).map(([eventName, counts]) => ({ eventName, ...counts }));
+            if (Array.isArray(rawData)) {
+                for (const guest of rawData) {
+                    const codes = (guest.EventsConfirmed || '').split(',').map((code: string) => code.trim());
+                    const status = guest.RSVPStatus;
+                    const guestsAttending = parseInt(guest.GuestsAttending, 10) || 0;
+                    const allowedGuests = parseInt(guest.AllowedGuests, 10) || 0;
+
+                    const expandedCodes = codes.includes('E')
+                        ? Object.keys(EVENT_CODE_MAP).filter((k) => k !== 'E')
+                        : codes;
+
+                    const missingGuests = allowedGuests - guestsAttending;
+
+                    for (const code of expandedCodes) {
+                        const name = EVENT_CODE_MAP[code];
+                        if (!name || !summaryMap[name]) continue;
+
+                        if (status === 'Confirmed') {
+                            summaryMap[name].confirmed += guestsAttending;
+                            if (missingGuests > 0) {
+                                summaryMap[name].notAttending += missingGuests;
+                            }
+                        } else if (status === 'Not Responded') {
+                            summaryMap[name].notResponded += allowedGuests;
+                        } else if (status === 'Not Attending') {
+                            summaryMap[name].notAttending += allowedGuests;
+                        }
+                    }
+                }
+            } else {
+                console.error("Invalid guest data:", rawData);
+            }
+
+            const events = Object.keys(summaryMap).filter((eventName) => eventName !== 'Event' && eventName !== 'AllEvents');
+
+            const summaryArray = Object.entries(summaryMap).map(([eventName, counts]) => ({
+                eventName,
+                ...counts,
+            })).filter(({ eventName }) => eventName !== 'Event' && eventName !== 'AllEvents');
+
+            console.log("events", events);
+            console.log("summaryArray", summaryArray);
+            setEventList(events);
             setEventSummary(summaryArray);
         } catch (err) {
-            alert('Failed to fetch RSVP data.');
+            console.error("Error fetching RSVP data:", err);
         }
     };
 
     return (
-        <div className="w-full min-h-screen max-w-4xl mx-auto font-serif">
-            {/* Responsive Nav */}
+        <div className="w-full min-h-screen max-w-4xl mx-auto ">
             <div className="border-b mb-4">
-                {/* Desktop Tabs */}
                 <div className="hidden md:flex justify-around">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`py-3 px-4 text-sm font-medium ${activeTab === tab.id ? 'border-b-2 border-black' : 'text-gray-500'
-                                }`}
+                            className={`py-3 px-4 text-sm font-medium ${activeTab === tab.id ? 'border-b-2 border-black' : 'text-gray-500'}`}
                         >
                             {tab.label}
                         </button>
                     ))}
                 </div>
-
-                {/* Mobile Hamburger */}
                 <div className="flex md:hidden justify-between items-center px-4 py-3">
                     <h2 className="text-lg font-bold">{tabs.find(t => t.id === activeTab)?.label}</h2>
                     <button onClick={() => setMenuOpen(!menuOpen)}>
                         <Menu className="w-6 h-6 text-gray-600" />
                     </button>
                 </div>
-
-                {/* Mobile Dropdown Menu */}
                 {menuOpen && (
                     <div className="md:hidden flex flex-col px-4 pb-3 space-y-2">
                         {tabs.map((tab) => (
@@ -144,8 +156,7 @@ export default function WeddingSiteTabs({ data }: { data: any }) {
                                     setActiveTab(tab.id);
                                     setMenuOpen(false);
                                 }}
-                                className={`text-left text-sm ${activeTab === tab.id ? 'text-black font-semibold' : 'text-gray-600'
-                                    }`}
+                                className={`text-left text-sm ${activeTab === tab.id ? 'text-black font-semibold' : 'text-gray-600'}`}
                             >
                                 {tab.label}
                             </button>
@@ -154,7 +165,6 @@ export default function WeddingSiteTabs({ data }: { data: any }) {
                 )}
             </div>
 
-            {/* Tab Content */}
             <div className="mt-4">
                 {activeTab === 'saveTheDate' && data.enableSaveDate && <Home form={data} />}
                 {activeTab === 'rsvp' && data.enableRSVP && <RSVP rsvpSheetUrl={rsvpSheetUrl} />}
@@ -185,12 +195,9 @@ export default function WeddingSiteTabs({ data }: { data: any }) {
                         rsvpSheetUrl={rsvpSheetUrl}
                         eventSummary={eventSummary}
                         refreshRSVP={fetchRSVPData}
+                        eventList={eventList}
                     />
                 )}
-
-
-
-
             </div>
         </div>
     );
