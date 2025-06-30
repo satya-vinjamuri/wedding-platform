@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_template/common/layout/layout.dart';
+import 'package:weddesigner/common/layout/layout.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ItineraryScreen extends StatelessWidget {

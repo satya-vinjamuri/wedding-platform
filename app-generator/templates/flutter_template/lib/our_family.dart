@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_template/common/layout/layout.dart';
+import 'package:weddesigner/common/layout/layout.dart';
 
 class OurFamilyScreen extends StatelessWidget {
   const OurFamilyScreen({super.key});

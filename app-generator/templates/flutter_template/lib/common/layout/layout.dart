@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_template/settings.dart';
-import 'package:flutter_template/itinerary.dart';
-import 'package:flutter_template/our_family.dart';
-import 'package:flutter_template/photo_gallery.dart';
+import 'package:weddesigner/settings.dart';
+import 'package:weddesigner/itinerary.dart';
+import 'package:weddesigner/our_family.dart';
+import 'package:weddesigner/photo_gallery.dart';
 
 class Layout extends StatelessWidget {
   final String title;

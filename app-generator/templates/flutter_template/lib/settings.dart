@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_template/main.dart';
+import 'package:weddesigner/main.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
