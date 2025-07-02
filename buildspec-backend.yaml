@@ -1,0 +1,13 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - cd app-generator
+      - npm install
+  build:
+    commands:
+      - echo "Backend build complete"
+artifacts:
+  base-directory: app-generator
+  files:
+    - '**/*'

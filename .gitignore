@@ -1,0 +1,45 @@
+# Node.js & Next.js
+**/node_modules/
+**/.next/
+**/.env
+**/.env.local
+**/.DS_Store
+**/.turbo/
+
+# Firebase/Firestore
+firebase-debug.log
+
+# Build artifacts
+*.log
+*.lock
+*.zip
+
+# Flutter-specific ignores
+**/build/
+**/.dart_tool/
+**/.packages
+**/flutter_*.png
+
+# Ignore generated Flutter apps (important!)
+app-generator/generated_apps/
+
+# Optional: Ignore Flutter platform-specific templates
+app-generator/templates/flutter_template/ios/
+app-generator/templates/flutter_template/macos/
+app-generator/templates/flutter_template/android/
+app-generator/templates/flutter_template/linux/
+app-generator/templates/flutter_template/windows/
+
+# Keep Flutter template logic
+!app-generator/templates/flutter_template/pubspec.yaml
+!app-generator/templates/flutter_template/lib/
+!app-generator/templates/flutter_template/lib/**
+
+# Cache & IDE configs
+**/.vscode/
+**/.idea/
+**/xcuserdata/
+**/*.iml
+
+# Misc
+.DS_Store
