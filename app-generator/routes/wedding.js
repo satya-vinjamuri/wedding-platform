@@ -4,6 +4,7 @@ const db = require('../firebase/firebase');
 
 // GET /api/wedding/:code
 router.get('/:code', async (req, res) => {
+    console.log(req.params);
     const { code } = req.params;
 
     try {

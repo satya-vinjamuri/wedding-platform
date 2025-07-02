@@ -7,15 +7,36 @@ require('dotenv').config();
 
 const app = express();
 
+// ✅ Allow preflight and dynamic origin handling
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://wedding-platform-zeta.vercel.app',
+  'https://master.d23l4mo9odzywu.amplifyapp.com',
+  'https://www.weddesigner.io'
+];
+
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://wedding-platform-zeta.vercel.app',
-    'https://master.d23l4mo9odzywu.amplifyapp.com/',
-    'https://www.weddesigner.io/'
-  ],
-  methods: ['GET', 'POST'],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 }));
+
+// ✅ Explicitly handle preflight OPTIONS requests
+app.options('*', cors());
+
+
+// app.use(cors({
+//   origin: '*',
+//   methods: ['GET', 'POST'],
+// }));
+
 
 app.use(express.json());
 
