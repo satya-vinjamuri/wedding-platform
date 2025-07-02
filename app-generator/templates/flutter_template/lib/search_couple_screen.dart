@@ -45,7 +45,7 @@ class _SearchCoupleScreenState extends State<SearchCoupleScreen> {
             children: [
                 Text(
                 'Find Your Wedding App',
-                style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.bold),
+                style: GoogleFonts.montserrat(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
                 TextField(

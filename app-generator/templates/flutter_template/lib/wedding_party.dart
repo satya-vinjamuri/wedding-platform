@@ -24,7 +24,7 @@ class WeddingPartyScreen extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           name,
-          style: GoogleFonts.playfairDisplay(
+          style: GoogleFonts.montserrat(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.black,
@@ -60,7 +60,7 @@ class WeddingPartyScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Wedding Party',
-          style: GoogleFonts.playfairDisplay(
+          style: GoogleFonts.montserrat(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 22,
@@ -78,7 +78,7 @@ class WeddingPartyScreen extends StatelessWidget {
             children: [
               Text(
                 'Bridal Party',
-                style: GoogleFonts.playfairDisplay(
+                style: GoogleFonts.montserrat(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -90,7 +90,7 @@ class WeddingPartyScreen extends StatelessWidget {
               const SizedBox(height: 24),
               Text(
                 'Groom Party',
-                style: GoogleFonts.playfairDisplay(
+                style: GoogleFonts.montserrat(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),

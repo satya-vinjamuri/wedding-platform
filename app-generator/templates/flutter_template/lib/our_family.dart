@@ -3,7 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:weddesigner/common/layout/layout.dart';
 
 class OurFamilyScreen extends StatelessWidget {
-  const OurFamilyScreen({super.key});
+  final Map<String, dynamic> weddingData;
+
+  const OurFamilyScreen({Key? key, required this.weddingData}) : super(key: key);
 
   Widget _buildMemberCard(String name, String description, String imagePath) {
     return Column(
@@ -23,7 +25,7 @@ class OurFamilyScreen extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           name,
-          style: GoogleFonts.playfairDisplay(
+          style: GoogleFonts.montserrat(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.black,
@@ -49,7 +51,7 @@ class OurFamilyScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Our Family',
-          style: GoogleFonts.playfairDisplay(
+          style: GoogleFonts.montserrat(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 22,

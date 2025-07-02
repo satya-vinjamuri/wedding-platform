@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF7F5F1),
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.pinkAccent),
         useMaterial3: true,
-        textTheme: GoogleFonts.playfairDisplayTextTheme(),
+        textTheme: GoogleFonts.montserratTextTheme(),
       ),
       home: const AuthGate(),
       debugShowCheckedModeBanner: false,
@@ -238,7 +238,7 @@ class _WeddingHomePageState extends State<WeddingHomePage> {
             children: [
               Text(
                 '{{BRIDE_NAME}}',
-                style: GoogleFonts.playfairDisplay(
+                style: GoogleFonts.montserrat(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.5,
@@ -246,7 +246,7 @@ class _WeddingHomePageState extends State<WeddingHomePage> {
               ),
               Text(
                 '&',
-                style: GoogleFonts.playfairDisplay(
+                style: GoogleFonts.montserrat(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.5,
@@ -254,7 +254,7 @@ class _WeddingHomePageState extends State<WeddingHomePage> {
               ),              
               Text(
                 '{{GROOM_NAME}}',
-                style: GoogleFonts.playfairDisplay(
+                style: GoogleFonts.montserrat(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.5,

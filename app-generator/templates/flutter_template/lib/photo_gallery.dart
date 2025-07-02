@@ -10,7 +10,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 List<String>? cachedImageUrls;
 
 class DriveGalleryScreen extends StatefulWidget {
-  const DriveGalleryScreen({super.key});
+  final Map<String, dynamic> weddingData;
+
+  const DriveGalleryScreen({Key? key, required this.weddingData}) : super(key: key);
 
   @override
   State<DriveGalleryScreen> createState() => _DriveGalleryScreenState();
@@ -73,7 +75,7 @@ class _DriveGalleryScreenState extends State<DriveGalleryScreen> {
       appBar: AppBar(
         title: Text(
           'Photo Gallery',
-          style: GoogleFonts.playfairDisplay(
+          style: GoogleFonts.montserrat(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 22,
