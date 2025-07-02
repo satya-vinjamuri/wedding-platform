@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_template/common/layout/layout.dart';
+import 'package:weddesigner/common/layout/layout.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ItineraryScreen extends StatelessWidget {
-  const ItineraryScreen({super.key});
+  final Map<String, dynamic> weddingData;
+
+  const ItineraryScreen({Key? key, required this.weddingData}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +16,7 @@ class ItineraryScreen extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
           'Wedding Itinerary',
-          style: GoogleFonts.playfairDisplay(
+          style: GoogleFonts.montserrat(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 20,
@@ -30,7 +32,7 @@ class ItineraryScreen extends StatelessWidget {
             children: [
               Text(
                 'Bride Events',
-                style: GoogleFonts.playfairDisplay(
+                style: GoogleFonts.montserrat(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                 ),
@@ -42,7 +44,7 @@ class ItineraryScreen extends StatelessWidget {
               const SizedBox(height: 24),
               Text(
                 'Groom Events',
-                style: GoogleFonts.playfairDisplay(
+                style: GoogleFonts.montserrat(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                 ),
@@ -54,7 +56,7 @@ class ItineraryScreen extends StatelessWidget {
               const SizedBox(height: 24),
               Text(
                 'Wedding Events',
-                style: GoogleFonts.playfairDisplay(
+                style: GoogleFonts.montserrat(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                 ),

@@ -1,4 +1,4 @@
-# flutter_template
+# weddesigner
 
 A new Flutter project.
 

@@ -4,13 +4,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_template/common/layout/layout.dart';
+import 'package:weddesigner/common/layout/layout.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 List<String>? cachedImageUrls;
 
 class DriveGalleryScreen extends StatefulWidget {
-  const DriveGalleryScreen({super.key});
+  final Map<String, dynamic> weddingData;
+
+  const DriveGalleryScreen({Key? key, required this.weddingData}) : super(key: key);
 
   @override
   State<DriveGalleryScreen> createState() => _DriveGalleryScreenState();
@@ -73,7 +75,7 @@ class _DriveGalleryScreenState extends State<DriveGalleryScreen> {
       appBar: AppBar(
         title: Text(
           'Photo Gallery',
-          style: GoogleFonts.playfairDisplay(
+          style: GoogleFonts.montserrat(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 22,

@@ -24,6 +24,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import CalendarPage from "@/components/utilities/Calendar";
 import { requiredScreens, screenToggles, getSidebarItems } from "@/types/ScreenTypes";
+import { toast } from "react-toastify";
 
 
 export default function Home() {
@@ -133,9 +134,20 @@ export default function Home() {
     };
 
     const handleLogout = async () => {
-        if (user) await saveFormToFirestore(user, form);
+        if (!form.isSubmitted) handleSave();
         router.push("/");
         await signOut(auth);
+    };
+
+    const handleSave = async () => {
+        if (user) {
+            const success = await saveFormToFirestore(user, form);
+            if (success) {
+                toast.success("Form saved successfully!");
+            } else {
+                toast.error("Failed to save form. Please try again.");
+            }
+        }
     };
 
     const goNext = () => setStep(prev => Math.min(prev + 1, sidebarItems.length - 1));
@@ -203,6 +215,23 @@ export default function Home() {
                     </div>
 
                     <div className="mt-auto flex flex-col gap-2">
+                        <Button
+                            variant="outline"
+                            className="text-black border border-gray-500 hover:bg-gray-100 text-sm font-bold"
+                            onClick={handleSave}
+                            disabled={form.isSubmitted || form.zipGenerated}
+                        >
+                            Save Details
+                        </Button>
+                        {form.isSubmitted || form.zipGenerated && (
+                            <Button
+                                variant="outline"
+                                className="text-black border border-gray-500 hover:bg-gray-100 text-sm font-bold"
+                                onClick={() => { router.push(`/site/${form.websiteSlug}`); }}
+                            >
+                                Access My Wedding Website
+                            </Button>
+                        )}
                         <Button
                             variant="outline"
                             className="text-black border border-gray-500 hover:bg-gray-100 text-sm font-bold"

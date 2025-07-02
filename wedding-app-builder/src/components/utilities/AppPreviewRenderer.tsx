@@ -68,12 +68,13 @@ export default function AppPreviewRenderer({ form, activeTab, setActiveTab }: Pr
                         </div>
                     )}
                     <p className="text-lg">
-                        {new Date(form.weddingDate).toLocaleDateString("en-US", {
+                        {new Date(`${form.weddingDate}T00:00:00`).toLocaleDateString("en-US", {
                             weekday: "long",
                             year: "numeric",
                             month: "long",
                             day: "numeric",
                         })}
+
                     </p>
                     <p className="text-xl">{form.weddingLocation}</p>
                     {form.enableRSVP && (

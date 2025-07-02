@@ -3,8 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
 
+const Map<String, String> eventCodeMap = {
+  'W': 'Wedding Ceremony',
+  'R': 'Reception',
+  'S': 'Sangeet',
+  'M': 'Mehndi',
+  'BH': 'Bride Haldi',
+  'GH': 'Groom Haldi',
+  'V': 'Vidhi',
+  'SN': 'Snathakam',
+};
+
 class RSVPFormScreen extends StatefulWidget {
-  const RSVPFormScreen({super.key});
+  final Map<String, dynamic> weddingData;
+
+  const RSVPFormScreen({Key? key, required this.weddingData}) : super(key: key);
 
   @override
   State<RSVPFormScreen> createState() => _RSVPFormScreenState();
@@ -15,33 +28,53 @@ class _RSVPFormScreenState extends State<RSVPFormScreen> {
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
 
+  String sheetId = '';
   int? allowedGuests;
   int selectedGuestCount = 1;
   bool isFound = false;
   bool isConfirmed = false;
   String statusMessage = '';
   bool loading = false;
-  String? attendanceChoice;
 
-  // This URL will be injected by the backend with the correct sheet ID
-  final String googleScriptUrl =
-      'https://script.google.com/macros/s/{{SHEET_ID}}/exec';
+  List<String> invitedEvents = [];
+  Map<String, String> rsvpChoices = {};
+
+  String get googleScriptUrl =>
+      'https://script.google.com/macros/s/AKfycbyBCO4ZfeL0StEecuR0UnlT8YCos5fT1Nh_swoKqH57sMn9-NmFIFl2hMKrobdw1jv5/exec?sheetId=$sheetId';
+
+  @override
+  void initState() {
+    super.initState();
+    extractSheetId();
+  }
+
+  void extractSheetId() {
+    final RegExp regExp = RegExp(r'd/([^/]+)/');
+    final match = regExp.firstMatch(widget.weddingData['rsvpSheetUrl'] ?? '');
+    if (match != null) {
+      setState(() {
+        sheetId = match.group(1)!;
+      });
+    } else {
+      debugPrint("No valid sheet ID found");
+    }
+  }
 
   Future<void> lookupGuest() async {
     setState(() {
       loading = true;
       isFound = false;
       isConfirmed = false;
-      attendanceChoice = null;
-      allowedGuests = null;
+      invitedEvents = [];
+      rsvpChoices = {};
     });
 
     try {
-      final response = await http.get(Uri.parse(googleScriptUrl));
-      if (response.statusCode == 200) {
-        final List<dynamic> users = jsonDecode(response.body);
+      final res = await http.get(Uri.parse(googleScriptUrl));
+      if (res.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(res.body);
 
-        final guest = users.firstWhere(
+        final guest = data.firstWhere(
           (user) =>
               user['Name']?.toString().toLowerCase().trim() ==
                   nameController.text.trim().toLowerCase() &&
@@ -51,18 +84,29 @@ class _RSVPFormScreenState extends State<RSVPFormScreen> {
         );
 
         if (guest != null) {
+          debugPrint("Guest found: $guest");
+          final raw = guest['Events']?.toString() ?? '';
+          final rawCodes = raw == 'AllEvents' ? eventCodeMap.keys.toList() : raw.split(',');
+
+          final mappedEvents = rawCodes
+              .map((code) => code.trim())
+              .where((code) => eventCodeMap.containsKey(code))
+              .map((code) => eventCodeMap[code]!)
+              .toList();
+
           setState(() {
             isFound = true;
             allowedGuests = int.tryParse(guest['AllowedGuests'].toString());
             selectedGuestCount = 1;
-            statusMessage = guest['RSVPStatus'] ?? 'Pending';
-            isConfirmed = statusMessage == 'Confirmed';
+            isConfirmed = guest['RSVPStatus'] == 'Confirmed';
+            invitedEvents = mappedEvents;
+            rsvpChoices = {for (var e in mappedEvents) e: ''};
           });
         } else {
           statusMessage = "Guest not found. Please check your details.";
         }
       } else {
-        statusMessage = "Server error: ${response.statusCode}";
+        statusMessage = "Server error: ${res.statusCode}";
       }
     } catch (e) {
       statusMessage = "Unexpected error: $e";
@@ -71,17 +115,20 @@ class _RSVPFormScreenState extends State<RSVPFormScreen> {
     setState(() => loading = false);
   }
 
-  Future<void> confirmRSVP() async {
+  Future<void> submitRSVP() async {
     setState(() => loading = true);
 
-    final name = nameController.text.trim();
-    final phone = phoneController.text.trim();
+    final confirmedEvents = rsvpChoices.entries
+        .where((e) => e.value == 'yes')
+        .map((e) => e.key)
+        .toList();
 
     final body = jsonEncode({
-      'name': name,
-      'phone': phone,
-      'rsvp': attendanceChoice == "yes",
-      'guestsAttending': attendanceChoice == "yes" ? selectedGuestCount : 0
+      'name': nameController.text.trim(),
+      'phone': phoneController.text.trim(),
+      'rsvp': confirmedEvents.isNotEmpty,
+      'guestsAttending': confirmedEvents.isNotEmpty ? selectedGuestCount : 0,
+      'eventsConfirmed': confirmedEvents,
     });
 
     try {
@@ -92,22 +139,14 @@ class _RSVPFormScreenState extends State<RSVPFormScreen> {
       );
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Thank you for confirming your RSVP!"),
-            backgroundColor: Colors.black,
-          ),
-        );
-        Navigator.pop(context);
-      } else {
         setState(() {
-          statusMessage = "Error submitting RSVP: ${response.statusCode}";
+          isConfirmed = true;
         });
+      } else {
+        statusMessage = "Failed to submit RSVP: ${response.statusCode}";
       }
     } catch (e) {
-      setState(() {
-        statusMessage = "Unexpected error: $e";
-      });
+      statusMessage = "Unexpected error: $e";
     }
 
     setState(() => loading = false);
@@ -117,169 +156,127 @@ class _RSVPFormScreenState extends State<RSVPFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('RSVP',
-            style: GoogleFonts.playfairDisplay(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 22,
-            )),
+        title: Text('RSVP', style: GoogleFonts.montserrat(color: Colors.white)),
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: loading
-            ? const Center(
-                child: CircularProgressIndicator(color: Colors.black))
-            : SingleChildScrollView(
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     if (!isFound) ...[
                       Form(
                         key: _formKey,
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             TextFormField(
                               controller: nameController,
-                              style: const TextStyle(fontSize: 22),
-                              decoration: const InputDecoration(
-                                labelText: 'Full Name',
-                                labelStyle: TextStyle(fontSize: 16),
-                                contentPadding: EdgeInsets.symmetric(
-                                    vertical: 20, horizontal: 12),
-                              ),
-                              validator: (value) => value == null || value.isEmpty
-                                  ? 'Required'
-                                  : null,
+                              decoration: const InputDecoration(labelText: 'Full Name'),
+                              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
                             ),
                             const SizedBox(height: 20),
                             TextFormField(
                               controller: phoneController,
                               keyboardType: TextInputType.phone,
-                              style: const TextStyle(fontSize: 22),
-                              decoration: const InputDecoration(
-                                labelText: 'Phone Number',
-                                labelStyle: TextStyle(fontSize: 16),
-                                contentPadding: EdgeInsets.symmetric(
-                                    vertical: 20, horizontal: 12),
-                              ),
-                              validator: (value) => value == null || value.isEmpty
-                                  ? 'Required'
-                                  : null,
+                              decoration: const InputDecoration(labelText: 'Phone Number'),
+                              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
                             ),
-                            const SizedBox(height: 28),
+                            const SizedBox(height: 24),
                             ElevatedButton(
                               onPressed: () {
                                 if (_formKey.currentState!.validate()) {
                                   lookupGuest();
                                 }
                               },
-                              child: Text(
-                                'Look Up Invitation',
-                                style: GoogleFonts.playfairDisplay(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              child: const Text("Look Up Invitation"),
                             ),
-                            if (statusMessage.isNotEmpty) ...[
-                              const SizedBox(height: 16),
-                              Text(
-                                statusMessage,
-                                style: const TextStyle(
-                                  color: Colors.redAccent,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                textAlign: TextAlign.center,
+                            if (statusMessage.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: Text(statusMessage, style: const TextStyle(color: Colors.red)),
                               ),
-                            ],
                           ],
                         ),
                       ),
                     ],
-                    const SizedBox(height: 24),
-                    if (isFound && allowedGuests != null && !isConfirmed) ...[
-                      Text(
-                        nameController.text.trim() +
-                            ((allowedGuests ?? 0) > 1 ? ' and family' : ''),
-                        style: GoogleFonts.playfairDisplay(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    if (isFound && !isConfirmed && allowedGuests != null) ...[
+                      const SizedBox(height: 16),
+                      Text('${nameController.text.trim()}'
+                          '${(allowedGuests ?? 0) > 1 ? ' and family' : ''}', style: GoogleFonts.montserrat(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white), ),
+                      const SizedBox(height: 16),
+                      ...invitedEvents.map((event) => Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Will you attend $event?', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, color: Colors.white)),
+                              Row(
+                                children: [
+                                  Radio<String>(
+                                    value: 'yes',
+                                    groupValue: rsvpChoices[event],
+                                    onChanged: (val) {
+                                      setState(() => rsvpChoices[event] = val!);
+                                    },
+                                  ),
+                                  const Text('Yes', style: TextStyle(color: Colors.white)),
+                                  Radio<String>(
+                                    value: 'no',
+                                    groupValue: rsvpChoices[event],
+                                    onChanged: (val) {
+                                      setState(() => rsvpChoices[event] = val!);
+                                    },
+                                  ),
+                                  const Text('No', style: TextStyle(color: Colors.white)),
+                                ],
+                              ),
+                            ],
+                          )),
+                      const SizedBox(height: 12),
+                      Text('Guests Attending', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, color: Colors.white)),
+                      DropdownButton<int>(
+                        value: selectedGuestCount,
+                        onChanged: (val) => setState(() => selectedGuestCount = val!),
+                        items: List.generate(allowedGuests!, (i) => i + 1)
+                            .map((e) => DropdownMenuItem(value: e, child: Text('$e', style: GoogleFonts.montserrat(color: Colors.white))))
+                            .toList(),
                       ),
                       const SizedBox(height: 20),
-                      const Text('Will you be attending?',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w500)),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Radio<String>(
-                            value: 'yes',
-                            groupValue: attendanceChoice,
-                            onChanged: (value) =>
-                                setState(() => attendanceChoice = value),
-                          ),
-                          const Text('Can Make It'),
-                          Radio<String>(
-                            value: 'no',
-                            groupValue: attendanceChoice,
-                            onChanged: (value) =>
-                                setState(() => attendanceChoice = value),
-                          ),
-                          const Text("Can't Make It"),
-                        ],
-                      ),
-                      if (attendanceChoice == 'yes') ...[
-                        const SizedBox(height: 12),
-                        const Text('How many guests are attending?'),
-                        DropdownButton<int>(
-                          value: selectedGuestCount,
-                          onChanged: (int? newValue) {
-                            setState(() {
-                              selectedGuestCount = newValue!;
-                            });
-                          },
-                          items: List.generate(
-                            allowedGuests!,
-                            (index) => DropdownMenuItem(
-                              value: index + 1,
-                              child: Text('${index + 1}'),
-                            ),
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 24),
                       ElevatedButton(
-                        onPressed: attendanceChoice != null ? confirmRSVP : null,
-                        child: const Text('Submit RSVP'),
+                        onPressed: rsvpChoices.values.any((v) => v.isNotEmpty)
+                            ? submitRSVP
+                            : null,
+                        child: const Text("Submit RSVP"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD8A3A7),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(32),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 40, vertical: 16),
+                        ),                        
                       ),
                     ],
                     if (isConfirmed) ...[
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Thank you for confirming your RSVP. We’re excited to celebrate with you!',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 30),
+                      const Text("✅ Thank you for confirming your RSVP!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                      const Text("We're excited to have you celebrate our special day with us!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                      const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () {
                           setState(() {
                             isConfirmed = false;
-                            attendanceChoice = null;
+                            rsvpChoices = {for (var e in invitedEvents) e: ''};
                           });
                         },
-                        child: const Text('Change RSVP'),
+                        child: const Text("Click here to update your RSVP", style: TextStyle(color: Colors.white)),
                       ),
                     ]
                   ],
                 ),
               ),
-      ),
+            ),
     );
   }
 }

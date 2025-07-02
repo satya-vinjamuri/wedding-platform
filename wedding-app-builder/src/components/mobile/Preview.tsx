@@ -21,7 +21,7 @@ import Countdown from "@/components/utilities/Countdown";
 import { saveFormToFirestore } from "@/lib/saveFormToFirestore";
 import AppPreviewRenderer from "@/components/utilities/AppPreviewRenderer";
 import { validateRequiredFields } from "@/components/utilities/FormValidation";
-
+import { generateSlug } from "@/lib/generateSlug";
 
 const db = getFirestore();
 
@@ -77,11 +77,12 @@ export default function Preview({ form, goBack, navigateToSection, isSubmitted }
             const storageRef = ref(storage, zipPath);
             await uploadBytes(storageRef, blob);
             const downloadURL = await getDownloadURL(storageRef);
-
+            const webSlug = generateSlug(form.brideName, form.groomName, form.weddingDate);
             await setDoc(doc(db, "weddingApps", user.uid), {
                 // ...form,
                 isSubmitted: true,
                 zipGenerated: true,
+                websiteSlug: webSlug,
                 formCompleted: true,
                 feedbackReceived: false,
                 published: false,

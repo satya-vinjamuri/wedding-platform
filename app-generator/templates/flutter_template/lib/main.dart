@@ -1,26 +1,58 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:local_auth/local_auth.dart';
-import 'package:flutter_template/common/layout/layout.dart';
+import 'package:weddesigner/functions/getCoupleDetails.dart';
+import 'package:weddesigner/couple_home_screen.dart';
 
-void main() {
-  runApp(const MyApp());
+// Background handler
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  debugPrint('🔔 Background message received: ${message.messageId}');
 }
 
-class AdminProvider extends InheritedWidget {
-  final bool isAdmin;
+// Local notifications plugin
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
-  const AdminProvider({super.key, required this.isAdmin, required super.child});
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
-  static AdminProvider? of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<AdminProvider>();
-  }
+  // Background FCM handler
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  @override
-  bool updateShouldNotify(AdminProvider oldWidget) =>
-      isAdmin != oldWidget.isAdmin;
+  // Request permission
+  await FirebaseMessaging.instance.requestPermission();
+
+  // Init local notifications
+  const AndroidInitializationSettings androidSettings =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  const DarwinInitializationSettings iosSettings = DarwinInitializationSettings();
+
+  const InitializationSettings initSettings = InitializationSettings(
+    android: androidSettings,
+    iOS: iosSettings,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(initSettings);
+
+
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'default_channel',
+    'Wedding Notifications',
+    description: 'Channel for WedDesigner app notifications',
+    importance: Importance.high,
+  );
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -29,273 +61,279 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '{{COUPLE_NAME}} Wedding App',
+      title: 'WedDesigner',
       theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFF7F5F1),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.pinkAccent),
+        scaffoldBackgroundColor: const Color(0xFF0D0208),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFD8A3A7),
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
-        textTheme: GoogleFonts.playfairDisplayTextTheme(),
+        textTheme: GoogleFonts.montserratTextTheme().copyWith(
+          bodyLarge: GoogleFonts.montserrat(
+            fontSize: 18,
+            color: const Color(0xFFE4D7DE),
+          ),
+          titleLarge: GoogleFonts.montserrat(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFFE4D7DE),
+          ),
+        ),
       ),
-      home: const AuthGate(),
+      home: const StyledLandingPage(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class AuthGate extends StatefulWidget {
-  const AuthGate({super.key});
+class StyledLandingPage extends StatefulWidget {
+  const StyledLandingPage({super.key});
 
   @override
-  State<AuthGate> createState() => _AuthGateState();
+  State<StyledLandingPage> createState() => _StyledLandingPageState();
 }
 
-class _AuthGateState extends State<AuthGate> {
-  bool isAuthenticated = false;
-  bool isAdmin = false;
-  final passwordController = TextEditingController();
-  final LocalAuthentication auth = LocalAuthentication();
-  static const sessionTimeout = Duration(minutes: 15);
-
-  // 👇 Update this value via codegen
-  static const configuredPassword = '{{APP_PASSWORD}}';
-
-  bool get passwordRequired =>
-      configuredPassword.isNotEmpty &&
-      configuredPassword != '{{APP_PASSWORD}}';
+class _StyledLandingPageState extends State<StyledLandingPage> {
+  bool showSearch = false;
+  bool showIntro = true;
+  final TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _checkStoredAuth();
-  }
 
-  Future<void> _checkStoredAuth() async {
-    final prefs = await SharedPreferences.getInstance();
-    final storedAuth = prefs.getBool('isAuthenticated') ?? false;
-    final storedAdmin = prefs.getBool('isAdmin') ?? false;
-    final timestamp = prefs.getInt('authTimestamp');
+    // Foreground notifications
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? android = message.notification?.android;
 
-    final now = DateTime.now();
-    final lastAuthTime = timestamp != null
-        ? DateTime.fromMillisecondsSinceEpoch(timestamp)
-        : DateTime.fromMillisecondsSinceEpoch(0);
+      if (notification != null && android != null) {
+        flutterLocalNotificationsPlugin.show(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              'default_channel',
+              'Wedding Notifications',
+              channelDescription: 'Channel for WedDesigner app notifications',
+              importance: Importance.max,
+              priority: Priority.high,
+              icon: '@mipmap/ic_launcher',
+            ),
+          ),
+        );
+      }
+    });
 
-    if (storedAuth && now.difference(lastAuthTime) < sessionTimeout) {
+    Future.delayed(const Duration(seconds: 2), () async {
+      final prefs = await SharedPreferences.getInstance();
+      final savedCode = prefs.getString('activeWeddingCode');
+      if (savedCode != null && savedCode.isNotEmpty) {
+        final data = await getCoupleDetails(savedCode);
+        if (data != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => CoupleHomeScreen(weddingData: data),
+            ),
+          );
+          return;
+        }
+      }
       setState(() {
-        isAuthenticated = true;
-        isAdmin = storedAdmin;
+        showIntro = false;
       });
-    } else if (await _tryBiometricAuth()) {
-      setState(() {
-        isAuthenticated = true;
-        isAdmin = storedAdmin;
-      });
-      await prefs.setInt(
-          'authTimestamp', DateTime.now().millisecondsSinceEpoch);
-    } else {
-      await prefs.clear();
-    }
-  }
-
-  Future<bool> _tryBiometricAuth() async {
-    try {
-      bool canAuth =
-          await auth.canCheckBiometrics || await auth.isDeviceSupported();
-      if (!canAuth) return false;
-
-      return await auth.authenticate(
-        localizedReason: 'Authenticate to access your app',
-        options: const AuthenticationOptions(biometricOnly: true),
-      );
-    } catch (_) {
-      return false;
-    }
-  }
-
-  Future<void> _validatePassword() async {
-    final password = passwordController.text;
-    final prefs = await SharedPreferences.getInstance();
-
-    if (!passwordRequired || password == configuredPassword) {
-      await prefs.setBool('isAuthenticated', true);
-      await prefs.setBool('isAdmin', false);
-      await prefs.setInt(
-          'authTimestamp', DateTime.now().millisecondsSinceEpoch);
-      setState(() {
-        isAuthenticated = true;
-        isAdmin = false;
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Incorrect password'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isAuthenticated || !passwordRequired) {
-      return AdminProvider(isAdmin: isAdmin, child: const WeddingHomePage());
-    }
-
     return Scaffold(
+      backgroundColor: const Color(0xFF0D0208),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Enter Access Password',
-                  style: GoogleFonts.merriweather(
-                      fontSize: 22, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Password',
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                  onPressed: _validatePassword,
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white),
-                  child: const Text('Submit')),
-            ],
+          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 800),
+            transitionBuilder: (child, animation) =>
+                FadeTransition(opacity: animation, child: child),
+            child: showIntro
+                ? Text(
+                    'Welcome to WedDesigner',
+                    key: const ValueKey('intro'),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontSize: 36,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFFE4D7DE),
+                        ),
+                    textAlign: TextAlign.center,
+                  )
+                : _buildMainContent(),
           ),
         ),
       ),
     );
   }
-}
 
-class WeddingHomePage extends StatefulWidget {
-  const WeddingHomePage({super.key});
-
-  @override
-  State<WeddingHomePage> createState() => _WeddingHomePageState();
-}
-
-class _WeddingHomePageState extends State<WeddingHomePage> {
-  Duration _timeLeft = Duration.zero;
-  Timer? _countdownTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    try {
-      _timeLeft =
-          DateTime.parse('{{WEDDING_DATE}}').difference(DateTime.now());
-    } catch (_) {
-      // fallback in case parse fails
-      _timeLeft = DateTime(2026, 2, 20).difference(DateTime.now());
-    }
-    _startCountdown();
-  }
-
-  void _startCountdown() {
-    DateTime targetDate;
-    try {
-      targetDate = DateTime.parse('{{WEDDING_DATE}}');
-    } catch (_) {
-      targetDate = DateTime(2026, 2, 20); // fallback
-    }
-
-    _countdownTimer?.cancel();
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      final now = DateTime.now();
-      final diff = targetDate.difference(now);
-      if (diff.isNegative) {
-        _countdownTimer?.cancel();
-        setState(() => _timeLeft = Duration.zero);
-      } else {
-        setState(() => _timeLeft = diff);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _countdownTimer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Layout(
-      title: "SAVE THE DATE",
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '{{BRIDE_NAME}}',
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
+  Widget _buildMainContent() {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 500),
+      transitionBuilder: (child, animation) =>
+          FadeTransition(opacity: animation, child: child),
+      child: showSearch
+          ? Column(
+              key: const ValueKey("search-view"),
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Enter the couple’s code",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              Text(
-                '&',
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
+                const SizedBox(height: 20),
+                TextField(
+                  controller: searchController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'e.g. arti-vihaan-2025-07',
+                    labelStyle: const TextStyle(color: Color(0xFFE4D7DE)),
+                    filled: true,
+                    fillColor: Colors.black26,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
-              ),              
-              Text(
-                '{{GROOM_NAME}}',
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    debugPrint(prefs.getString('activeWeddingCode') ??
+                        'No active wedding code found');
+                    final code = searchController.text.trim();
+                    if (code.isNotEmpty) {
+                      debugPrint('Searching for couple: $code');
+                      final data = await getCoupleDetails(code);
+                      if (data != null) {
+                        await prefs.setString('activeWeddingCode', code);
+                        debugPrint(
+                            '✅ Couple found: ${data['brideName']} & ${data['groomName']}');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                'Welcome to the Wedding of ${data['brideName']} & ${data['groomName']}'),
+                            backgroundColor: Colors.greenAccent,
+                          ),
+                        );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                CoupleHomeScreen(weddingData: data),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content:
+                                Text('No wedding found with that code.'),
+                            backgroundColor: Colors.redAccent,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD8A3A7),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 40, vertical: 16),
+                  ),
+                  child: const Text(
+                    'Search',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                '{{WEDDING_DATE}}',
-                style: GoogleFonts.merriweather(fontSize: 18),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '{{WEDDING_LOCATION}}',
-                style: GoogleFonts.merriweather(
-                  fontSize: 16,
-                  color: Colors.grey[700],
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () {
+                    searchController.clear();
+                    setState(() {
+                      searchController.clear();
+                      showSearch = false;
+                    });
+                  },
+                  child: const Text(
+                    'Back',
+                    style: TextStyle(
+                        color: Color(0xFFE4D7DE),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold),
+                  ),
+                )
+              ],
+            )
+          : Column(
+              key: const ValueKey("welcome-view"),
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    'lib/assets/logo.png',
+                    width: double.infinity,
+                    height: 400,
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                _timeLeft.inSeconds > 0
-                    ? '${_timeLeft.inDays}d ${_timeLeft.inHours % 24}h ${_timeLeft.inMinutes % 60}m ${_timeLeft.inSeconds % 60}s to go!'
-                    : 'The big day has arrived!',
-                style: GoogleFonts.merriweather(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 16),
+                const Text(
+                  'Find your friend’s wedding app below',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                'Thank you for being part of our special day!',
-                style: GoogleFonts.merriweather(
-                  fontSize: 16,
-                  fontStyle: FontStyle.italic,
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 40, vertical: 16),
+                    backgroundColor: const Color(0xFFD8A3A7),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                    elevation: 4,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      showSearch = true;
+                    });
+                  },
+                  child: const Text(
+                    "Find their Wedding",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
+              ],
+            ),
     );
   }
 }

@@ -109,6 +109,7 @@ export interface FormState {
     // Submission State
     isSubmitted: boolean;
     zipGenerated?: boolean;
+    websiteSlug?: string;
 }
 
 export const defaultFormState: FormState = {
