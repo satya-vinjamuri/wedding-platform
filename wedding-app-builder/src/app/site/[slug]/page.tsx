@@ -1,12 +1,15 @@
+"use client";
+
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebaseConfig';
 import { notFound } from 'next/navigation';
 import WeddingSiteTabs from '@/components/website/WeddingSiteTabs';
 import { format, parseISO } from 'date-fns';
+import { useParams } from 'next/navigation';
 
-export default async function WeddingSitePage({ params }: { params: { slug: string } }) {
-    const slug = params.slug;
-    console.log("✅ Slug:", slug);
+export default async function WeddingSitePage() {
+    const params = useParams();
+    const slug = params.slug; console.log("✅ Slug:", slug);
 
     const q = query(collection(db, 'weddingApps'), where('websiteSlug', '==', slug));
     const snapshot = await getDocs(q);
@@ -22,14 +25,10 @@ export default async function WeddingSitePage({ params }: { params: { slug: stri
 
     return (
         <div
-            className="min-h-screen text-gray-800  bg-cover bg-center relative"
-            style={{
-                backgroundImage: "url('/backgrounds/floral-bg-1.jpg')",
-            }}
+            className="min-h-screen text-gray-800 bg-cover bg-center relative"
+            style={{ backgroundImage: "url('/backgrounds/floral-bg-1.jpg')" }}
         >
-            {/* Opacity Overlay */}
             <div className="absolute inset-0 bg-white/75 z-0" />
-
             <div className="relative z-10 px-6 pb-12">
                 <div className="text-center py-10">
                     <h1 className="text-5xl font-extrabold tracking-tight text-[#3B3B3B] drop-shadow">
@@ -46,5 +45,4 @@ export default async function WeddingSitePage({ params }: { params: { slug: stri
             </div>
         </div>
     );
-
 }
