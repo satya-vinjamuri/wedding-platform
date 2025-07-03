@@ -13,7 +13,7 @@ Future<Map<String, dynamic>?> getCoupleDetails(String code) async {
   //const String baseUrl = 'http://localhost:4000/api/wedding';
   //const String baseUrl = 'https://wedding2026.onrender.com/api/wedding';  
   const String baseUrl = 'http://192.168.86.22:4000/api/wedding'; // ✅ Use your Mac's IP here
-  final String endpoint = '$baseUrl/$code';
+  final String endpoint = '$baseUrl/wedding/$code';
 
   try {
     final response = await http.get(

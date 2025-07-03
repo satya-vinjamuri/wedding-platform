@@ -54,6 +54,7 @@ export default function Preview({ form, goBack, navigateToSection, isSubmitted }
 
     const handleGenerateApp = async () => {
         if (!user) return false;
+
         const errors = validateRequiredFields(form, setErrorMessages);
         if (errors.length > 0) {
             setShowErrorModal(true);
@@ -64,24 +65,11 @@ export default function Preview({ form, goBack, navigateToSection, isSubmitted }
             await saveFormToFirestore(user, form);
             isSubmitted = true;
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/generate-app`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(form),
-            });
-
-            if (!response.ok) return false;
-
-            const blob = await response.blob();
-            const zipPath = `zips/${user.uid}/wedding_app.zip`;
-            const storageRef = ref(storage, zipPath);
-            await uploadBytes(storageRef, blob);
-            const downloadURL = await getDownloadURL(storageRef);
             const webSlug = generateSlug(form.brideName, form.groomName, form.weddingDate);
+
             await setDoc(doc(db, "weddingApps", user.uid), {
-                // ...form,
                 isSubmitted: true,
-                zipGenerated: true,
+                zipGenerated: false, // TODO: remove zip-related fields later
                 websiteSlug: webSlug,
                 formCompleted: true,
                 feedbackReceived: false,
@@ -89,21 +77,18 @@ export default function Preview({ form, goBack, navigateToSection, isSubmitted }
                 generatedAt: serverTimestamp(),
             }, { merge: true });
 
-            await setDoc(doc(db, "weddingAppZips", user.uid), {
-                userId: user.uid,
-                downloadUrl: downloadURL,
-                zipPath,
-                generatedAt: serverTimestamp(),
-            });
-
-            const latestSnap = await getDocs(query(collection(db, "workRequests"), orderBy("__name__", "desc"), limit(1)));
+            const latestSnap = await getDocs(query(
+                collection(db, "workRequests"),
+                orderBy("__name__", "desc"),
+                limit(1)
+            ));
             const newId = latestSnap.empty ? 1 : parseInt(latestSnap.docs[0].id) + 1;
 
             await setDoc(doc(db, "workRequests", newId.toString()), {
                 assignee: "Satya Vinjamuri",
                 userId: user.uid,
                 coupleName: `${form.brideName}&${form.groomName}`,
-                zipFileUrl: downloadURL,
+                zipFileUrl: "", // TODO: remove zip-related fields later
                 authStatus: WorkStatus.Submitted,
                 feedback: "",
                 dateCreated: serverTimestamp(),
@@ -115,13 +100,14 @@ export default function Preview({ form, goBack, navigateToSection, isSubmitted }
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ type: 'App Submission Request' })
             });
-
+            isSubmitted = true;
             return true;
         } catch (error) {
-            console.error("Error generating app:", error);
+            console.error("Error submitting app:", error);
             return false;
         }
     };
+
 
     const tabs = [
         { id: "home", label: "Home", icon: <Home size={18} /> },
