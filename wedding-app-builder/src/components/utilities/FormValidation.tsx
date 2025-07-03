@@ -14,7 +14,7 @@ export const validateRequiredFields = (
     if (!form.appName.trim()) errors.push("App name");
 
     // Save the Date
-    if (form.enableSaveDate && !form.saveTheDateImage) {
+    if (form.enableSaveDate && !form.saveTheDateImageUrl) {
         errors.push("Please choose an image for your Save The Date screen");
     }
 

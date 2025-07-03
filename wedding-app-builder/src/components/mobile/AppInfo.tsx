@@ -91,7 +91,7 @@ export default function Home() {
                 if (snapshot.exists()) {
                     const data = snapshot.data();
                     setForm(prev => ({ ...prev, ...data }));
-                    if (data?.zipGenerated || data.isSubmitted) setIsSubmitted(true);
+                    if (data.isSubmitted) setIsSubmitted(true);
                 }
             } catch (err) {
                 console.error("Failed to load form:", err);
@@ -219,11 +219,11 @@ export default function Home() {
                             variant="outline"
                             className="text-black border border-gray-500 hover:bg-gray-100 text-sm font-bold"
                             onClick={handleSave}
-                            disabled={form.isSubmitted || form.zipGenerated}
+                            disabled={form.isSubmitted}
                         >
                             Save Details
                         </Button>
-                        {form.isSubmitted || form.zipGenerated && (
+                        {form.isSubmitted && (
                             <Button
                                 variant="outline"
                                 className="text-black border border-gray-500 hover:bg-gray-100 text-sm font-bold"
