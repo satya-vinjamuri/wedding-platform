@@ -232,6 +232,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             if (isAdmin == true) ...[
+              const SizedBox(height: 16),              
               Text('Admin Tools',
                   style: GoogleFonts.playfairDisplay(
                       fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
