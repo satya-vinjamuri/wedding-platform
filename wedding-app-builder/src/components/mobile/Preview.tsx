@@ -119,12 +119,23 @@ export default function Preview({ form, goBack, navigateToSection, isSubmitted }
 
     return (
         <div>
-            <div className="pb-6">
-                <h2 className="text-2xl font-semibold text-pink-400">Preview of your Custom App</h2>
-                <p className="mt-4 text-sm text-red-500 font-bold italic bg-petal px-4 py-2 rounded-md border max-w-2xl">
-                    Please remember this is just a preview and not what your app will actually look like!
-                </p>
-            </div>
+
+            {isSubmitted ? (
+                <div className="mt-4 pb-6">
+                    <h2 className="text-2xl font-semibold text-pink-400">Thank you for your submission!</h2>
+                    <p className="mt-4 text-sm text-black font-bold italic bg-petal py-2 max-w-2xl">
+                        We will review your app and get back to you within 24 hours! Please be patient, you will be able to make more changes to your app after we review it!
+                    </p>
+                </div>
+            ) : (
+
+                <div className="pb-6">
+                    <h2 className="text-2xl font-semibold text-pink-400">Preview of your Mobile View</h2>
+                    <p className="mt-4 text-sm text-red-500 font-bold italic bg-petal px-4 py-2 rounded-md border max-w-2xl">
+                        Please remember this is just a preview and not what your app will actually look like!
+                    </p>
+                </div>                
+            )}
 
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-center gap-12">
                 <div className="relative shadow-2xl rounded-[40px] w-[300px] h-[600px] overflow-hidden scrollbar-hide border-[6px] border-gray-200 text-black" style={{ backgroundColor: form.selectedColor }}>
@@ -146,15 +157,22 @@ export default function Preview({ form, goBack, navigateToSection, isSubmitted }
                     </div>
                 </div>
 
-                <div className="flex flex-col items-center gap-4 pb-12">
-                    <h2 className="text-2xl font-semibold text-black">{form.appName}</h2>
-                    <Button className="w-[200px] bg-pink-400 text-white font-bold" onClick={() => setShowConfirmModal(true)} disabled={isSubmitted || form?.zipGenerated}>
-                        {isSubmitted ? "Submitted" : "Build My App"}
-                    </Button>
-                    <Button variant="outline" className="w-[200px] font-bold" onClick={goBack}>
-                        Back
-                    </Button>
-                </div>
+                    <div className="flex flex-col items-center gap-4 pb-12">
+                        
+                        {!isSubmitted && (
+                            <div>
+                                <h2 className="text-2xl font-semibold text-black">{form.appName}</h2>                            
+                                <Button className="w-[200px] bg-pink-400 text-white font-bold" onClick={() => setShowConfirmModal(true)} disabled={isSubmitted || form?.zipGenerated}>
+                                    Build My App
+                                </Button>
+                            </div>
+                        )}
+                        <Button variant="outline" className="w-[200px] font-bold" onClick={goBack}>
+                            Back
+                        </Button>
+                    </div>                    
+
+
             </div>
 
             <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
