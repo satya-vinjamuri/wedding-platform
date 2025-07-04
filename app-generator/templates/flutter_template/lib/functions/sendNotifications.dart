@@ -3,9 +3,9 @@ import 'dart:convert';
 
 Future<bool> sendNotificationBlast(String title, String body, String weddingCode) async {
   //const String endpoint = 'http://localhost:4000/send-blast'; 
-  //const String endpoint = 'https://wedding2026.onrender.com/send-blast';
-  const String endpoint = 'http://192.168.86.22:4000/send-blast';
-
+  const String endpoint = 'https://wedding2026.onrender.com/send-blast';
+  //const String endpoint = 'http://192.168.86.22:4000/send-blast';
+  print("Sending notification for $weddingCode to $endpoint with title: $title and body: $body");
   try {
     final response = await http.post(
       Uri.parse(endpoint),

@@ -63,7 +63,7 @@ class _CoupleHomeScreenState extends State<CoupleHomeScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: 24),
+                const SizedBox(height: 100),
                 Text('SAVE THE DATE',
                     style: GoogleFonts.montserrat(fontSize: 42, fontWeight: FontWeight.bold, color: Colors.white)),
                 const SizedBox(height: 24),

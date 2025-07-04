@@ -6,14 +6,14 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 Future<Map<String, dynamic>?> getCoupleDetails(String code) async {
   bool isAdminMode = code.endsWith('-admin');
   if (isAdminMode) {
-    code = code.replaceFirst('-admin', ''); // remove the admin suffix
+    code = code.replaceFirst('-admin', '');
   }
 
   code = code.toLowerCase().replaceAll(RegExp(r'(?<=[a-z])(?=[A-Z])'), '-');
   //const String baseUrl = 'http://localhost:4000/api/wedding';
-  //const String baseUrl = 'https://wedding2026.onrender.com/api/wedding';  
-  const String baseUrl = 'http://192.168.86.22:4000/api/wedding'; // ✅ Use your Mac's IP here
-  final String endpoint = '$baseUrl/wedding/$code';
+  const String baseUrl = 'https://wedding2026.onrender.com/api/wedding';  
+  //const String baseUrl = 'http://192.168.86.22:4000/api/wedding'; // ✅ Use your Mac's IP here  
+  final String endpoint = '$baseUrl/$code';
 
   try {
     final response = await http.get(
@@ -34,9 +34,27 @@ Future<Map<String, dynamic>?> getCoupleDetails(String code) async {
         print("🔕 Unsubscribed from $previousTopic");
       }
 
-      // ✅ Subscribe to new topic
+      // ✅ Ensure valid FCM token before subscribing
+      String? token;
+      int retries = 0;
+      while (token == null && retries < 5) {
+        token = await FirebaseMessaging.instance.getToken();
+        if (token == null) {
+          await Future.delayed(const Duration(seconds: 1));
+          retries++;
+        }
+      }
+
+      if (token == null) {
+        print('❌ FCM token unavailable after 5 retries. Aborting topic subscription.');
+        return null;
+      }
+
+      print('📲 FCM token: $token');
+
+      // ✅ Subscribe to topic
       await FirebaseMessaging.instance.subscribeToTopic(code);
-      print("📲 Subscribed to $code");
+      print("📲 Subscribed to topic: $code");
 
       // Save state
       await prefs.setString('subscribedTopic', code);

@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const generateAppRoute = require('./routes/generateApp');
-//const weddingRoute = require('./routes/wedding');
+const weddingRoute = require('./routes/wedding');
 const { sendBlastNotification } = require('./routes/sendNotification'); // ✅ Import the correct function
 require('dotenv').config();
 
@@ -61,7 +61,7 @@ app.post('/send-blast', async (req, res) => {
 });
 
 app.use('/api/generate-app', generateAppRoute);
-//app.use('/api/wedding', weddingRoute); // ✅ Wedding API route
+app.use('/api/wedding', weddingRoute); // ✅ Wedding API route
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
