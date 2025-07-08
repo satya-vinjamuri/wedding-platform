@@ -48,7 +48,8 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
     const [slotInfo, setSlotInfo] = useState<{ start: Date; end: Date } | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [notifications, setNotifications] = useState<Notification[]>([]);
-
+    const [showTooltip, setShowTooltip] = useState(false);
+    
     const [eventTitle, setEventTitle] = useState("");
     const [eventType, setEventType] = useState<CalendarEvent["type"]>("weddingEvents");
     const [eventLocation, setEventLocation] = useState("");
@@ -117,13 +118,6 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
 
         setEvents(allEvents);
     }, [form]);
-
-    useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 640); // sm breakpoint
-        handleResize();
-        window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
-    }, []);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 640); // sm breakpoint
@@ -266,100 +260,161 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
         console.log("updatee form", form.weddingEvents);
     };
 
+    const handleMobileSlotSelect = ({ start, end }: SlotInfo) => {
+        setSlotInfo({ start, end });
+        setEditingId(null);
+        setEventTitle("");
+        setEventLocation("");
+        setEventTime("");
+        setEndTime("");
+        setEventDressCode("");
+        setEventType("weddingEvents");
+        setModalOpen(true);
+
+        console.log(start, end);
+
+        console.log(start, end);
+    }
     console.log("form.issubmitted", form.isSubmitted);
     return (
-        <div className="py-6 bg-[#FFF5F7]">
-            <div className="flex items-center gap-2 mb-2">
+        <div className="py-6 bg-[#FFF5F7] w-[345px]">
+            <div className="flex items-center gap-2 mb-2 relative">
                 <Label className="text-black font-bold text-lg">Wedding Event Calendar</Label>
-                <div className="relative group cursor-pointer">
-                    <span className="text-white bg-gray-500 rounded-full px-2 text-xs font-bold">?</span>
-                    <div className="absolute z-10 hidden group-hover:block max-w-xs w-[280px] p-3 bg-black text-white text-sm rounded shadow-lg top-full mt-1 whitespace-pre-line break-words">
-                        Enter all your wedding festivities! Remember to highlight the actual wedding ceremony as event name "Wedding Ceremony"
+                <button
+                    type="button"
+                    onClick={() => setShowTooltip(!showTooltip)}
+                    className="text-white bg-gray-500 rounded-full px-2 text-xs font-bold"
+                >
+                    ?
+                </button>
+
+                {showTooltip && (
+                    <div className="absolute left-0 mt-[-150px] sm:mt-1 sm:left-auto sm:right-0 z-10 w-[90vw] sm:w-[280px] p-3 bg-black text-white text-sm rounded shadow-lg whitespace-pre-line break-words">
+                    Enter all your wedding festivities! Remember to highlight the actual wedding ceremony as event name "Wedding Ceremony"
+                    Customize your Events as you please! Set your own start and end time, dress code, and location.
                     </div>
-                </div>
-            </div>
-            <div className="flex gap-4 mb-4 items-center">
-                <select
-                    value={currentDate.getMonth()}
-                    onChange={(e) => {
-                        const newDate = new Date(currentDate);
-                        newDate.setMonth(parseInt(e.target.value));
-                        setCurrentDate(newDate);
-                    }}
-                    className="border p-2 bg-[#FFF5F7] rounded border border-pink-300"
-                    disabled={form.isSubmitted}
-                >
-                    {months.map((month, index) => (
-                        <option key={index} value={index}>{month}</option>
-                    ))}
-                </select>
-
-                {isMobile && (
-                    <select
-                        value={currentDate.getDate()}
-                        onChange={(e) => {
-                            const newDate = new Date(currentDate);
-                            newDate.setDate(parseInt(e.target.value));
-                            setCurrentDate(newDate);
-                        }}
-                        disabled={form.isSubmitted}
-                        className="border p-2 bg-[#FFF5F7] rounded border border-pink-300"
-                    >
-                        {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
-                            <option key={day} value={day}>{day}</option>
-                        ))}
-                    </select>
                 )}
-
-                <select
-                    value={currentDate.getFullYear()}
-                    onChange={(e) => {
-                        const newDate = new Date(currentDate);
-                        newDate.setFullYear(parseInt(e.target.value));
-                        setCurrentDate(newDate);
-                    }}
-                    className="border bg-[#FFF5F7] border border-pink-300 p-2 rounded"
-                    disabled={form.isSubmitted}
-                >
-                    {years.map((year) => (
-                        <option key={year} value={year}>{year}</option>
-                    ))}
-                </select>
-            </div>
-            <div className="w-full overflow-x-auto">
-                <BigCalendar
-                    localizer={localizer}
-                    selectable={!form.isSubmitted}
-                    events={events}
-                    startAccessor="start"
-                    endAccessor="end"
-                    view={isMobile ? Views.DAY : currentView}
-                    views={isMobile ? ["day"] : ["month", "week", "day"]}
-                    onView={setCurrentView}
-                    date={currentDate}
-                    onNavigate={setCurrentDate}
-                    style={{ height: isMobile ? 300 : 400, width: "100%" }}
-                    popup
-                    onSelectSlot={handleSelectSlot}
-                    onSelectEvent={(event: CalendarEvent) => {
-                        setSlotInfo({ start: event.start, end: event.end });
-                        setEventTitle(event.title);
-                        setEventType(event.type);
-                        setEventLocation(event.location);
-                        setEventTime(event.time);
-                        setEndTime(event.endTime);
-                        setEventDressCode(event.dressCode);
-                        setEditingId(event.id);
-                        setModalOpen(true);
-                    }}
-                    eventPropGetter={eventStyleGetter}
-                />
             </div>
 
+            {isMobile ? (
+                <div className="flex flex-col gap-4 w-[300px]">
+                    {/* Native iOS date picker or react-datepicker */}
+                    <label className="text-lg font-bold">Select Date & Enter your Wedding Festivities!</label>
+                    <input
+                        type="date"
+                        value={format(currentDate, "yyyy-MM-dd")}
+                        onChange={(e) => {
+                          const selectedDate = new Date(e.target.value);
+                          handleMobileSlotSelect({ start: selectedDate, end: selectedDate } as SlotInfo);
+                          setCurrentDate(selectedDate); // keep date in sync
+                        }}
+                        //disabled={form.isSubmitted}
+                        className="border p-2 rounded bg-[#FFF5F7] border-pink-300"
+                    />
+                </div>
+                ) : (
+                    <>
+                        {/* DESKTOP-ONLY: calendar controls and BigCalendar */}
+                        <div className="flex flex-wrap gap-2 mb-6 items-center">
+                            <select
+                                value={currentDate.getMonth()}
+                                onChange={(e) => {
+                                const newDate = new Date(currentDate);
+                                newDate.setMonth(parseInt(e.target.value));
+                                setCurrentDate(newDate);
+                                }}
+                                className="border p-2 bg-[#FFF5F7] rounded border-pink-300"
+                                disabled={form.isSubmitted}
+                            >
+                                {months.map((month, index) => (
+                                <option key={index} value={index}>{month}</option>
+                                ))}
+                        </select>
 
+                            <select
+                                value={currentDate.getFullYear()}
+                                onChange={(e) => {
+                                const newDate = new Date(currentDate);
+                                newDate.setFullYear(parseInt(e.target.value));
+                                setCurrentDate(newDate);
+                                }}
+                                className="border bg-[#FFF5F7] border border-pink-300 p-2 rounded"
+                                disabled={form.isSubmitted}
+                            >
+                                {years.map((year) => (
+                                <option key={year} value={year}>{year}</option>
+                                ))}
+                            </select>
+                        </div>
 
-
-
+                        <div className="w-[343px] sm:overflow-x-visible">
+                        <div className="min-w-[600px] sm:min-w-0">
+                            <BigCalendar
+                                localizer={localizer}
+                                selectable={!form.isSubmitted}
+                                events={events}
+                                startAccessor="start"
+                                endAccessor="end"
+                                view={currentView}
+                                views={["month", "week", "day"]}
+                                onView={setCurrentView}
+                                date={currentDate}
+                                onNavigate={setCurrentDate}
+                                style={{ height: 400, width: "100%" }}
+                                popup
+                                onSelectSlot={handleSelectSlot}
+                                onSelectEvent={(event: CalendarEvent) => {
+                                    setSlotInfo({ start: event.start, end: event.end });
+                                    setEventTitle(event.title);
+                                    setEventType(event.type);
+                                    setEventLocation(event.location);
+                                    setEventTime(event.time);
+                                    setEndTime(event.endTime);
+                                    setEventDressCode(event.dressCode);
+                                    setEditingId(event.id);
+                                    setModalOpen(true);
+                                }}
+                                eventPropGetter={eventStyleGetter}
+                            />
+                        </div>
+                        </div>
+                    </>
+                )}
+                {isMobile && (
+                    <div className="flex flex-col gap-4 w-[300px] py-4">
+                        {form.groomEvents.length > 0 && (
+                        <div className="flex flex-col gap-4 w-[300px]">
+                            <label className="text-xl font-bold">Groom Events</label>
+                            {form.groomEvents.map((event) => (
+                                <div key={event.id}>
+                                    <p>{format(new Date(event.date), "MM/dd/yyyy")} {event.name}</p>
+                                </div>
+                                
+                            ))}
+                        </div>  
+                        )}
+                        {form.brideEvents.length > 0 && (
+                            <div className="flex flex-col gap-4 w-[300px]">
+                                <label className="text-xl font-bold">Bride Events</label>
+                                {form.brideEvents.map((event) => (
+                                    <div key={event.id}>
+                                        <p>{format(new Date(event.date), "MM/dd/yyyy")} {event.name}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        {form.weddingEvents.length > 0 && (
+                            <div className="flex flex-col gap-4 w-[300px]">
+                                <label className="text-xl font-bold">Wedding Events</label>
+                                {form.weddingEvents.map((event) => (
+                                    <div key={event.id}>
+                                        <p>{format(new Date(event.date), "MM/dd/yyyy")} {event.name}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}                        
+                    </div>
+                )}
 
             <Dialog open={modalOpen} onOpenChange={setModalOpen}>
                 <DialogContent className="space-y-4 max-w-xl bg-[#FFF5F7] text-black !bg-opacity-100 !backdrop-blur-none shadow-xl border border-gray-300 rounded-xl">
@@ -391,15 +446,35 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
                                 <option value="groomEvents">Groom</option>
                             </select>
                         </div>
-
                         <div>
+                            <Label>Start Time</Label>
+                            <input
+                                type="time"
+                                value={eventTime}
+                                onChange={(e) => setEventTime(e.target.value)}
+                                disabled={form.isSubmitted}
+                                className="w-full border rounded-md px-2 py-2 bg-[#FFF5F7] text-black"
+                            />
+                            </div>
+                            <div>
+                            <Label>End Time</Label>
+                            <input
+                                type="time"
+                                value={endTime}
+                                onChange={(e) => setEndTime(e.target.value)}
+                                disabled={form.isSubmitted}
+                                className="w-full border rounded-md px-2 py-2 bg-[#FFF5F7] text-black"
+                            />
+                        </div>
+
+                        {/* <div>
                             <Label>Start Time</Label>
                             <Input value={eventTime} onChange={(e) => setEventTime(e.target.value)} placeholder="e.g. 5:00 PM" disabled={form.isSubmitted} />
                         </div>
                         <div>
                             <Label>End Time</Label>
                             <Input value={endTime} onChange={(e) => setEndTime(e.target.value)} placeholder="e.g. 5:00 PM" disabled={form.isSubmitted} />
-                        </div>
+                        </div> */}
 
                         <div>
                             <Label>Location</Label>
@@ -427,3 +502,4 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
         </div>
     );
 }
+

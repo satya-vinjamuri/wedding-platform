@@ -6,7 +6,7 @@ const db = require('../firebase/firebase');
 router.get('/:code', async (req, res) => {
     console.log(req.params);
     const { code } = req.params;
-
+    console.log(code);
     try {
         const snapshot = await db
             .collection('weddingApps')

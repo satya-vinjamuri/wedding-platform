@@ -174,7 +174,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                         <Label className="text-black font-bold text-lg">App Password Protection</Label>
                         <div className="relative group cursor-pointer">
                             <span className="text-white bg-gray-500 rounded-full px-2 text-xs font-bold">?</span>
-                            <div className="absolute z-10 hidden group-hover:block w-64 p-2 bg-black text-white text-sm rounded shadow-lg top-full mt-1">
+                            <div className="absolute left-0 z-10  ml-[-200px] hidden group-hover:block w-64 p-2 bg-black text-white text-sm rounded shadow-lg top-full mt-1">
                                 Enable this to require a password before any of your guests can access the app and wedding details.
                             </div>
                         </div>
@@ -213,7 +213,7 @@ const Settings: React.FC<Props> = ({ form, handleChange, goNext, goBack }) => {
                         <Label className="text-black font-bold text-lg">Admin App Password Protection</Label>
                         <div className="relative group cursor-pointer">
                             <span className="text-white bg-gray-500 rounded-full px-2 text-xs font-bold">?</span>
-                            <div className="absolute z-10 hidden group-hover:block w-70 p-2 bg-black text-white text-sm rounded shadow-lg top-full mt-1">
+                            <div className="absolute left-0 z-10 ml-[-250px] hidden group-hover:block w-70 p-2 bg-black text-white text-sm rounded shadow-lg top-full mt-1">
                                 Enable this to require a password before accessing the admin area of your app.
                             </div>
                         </div>
