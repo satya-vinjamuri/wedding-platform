@@ -14,7 +14,9 @@ Future<Map<String, dynamic>?> getCoupleDetails(String code) async {
   const String baseUrl = 'https://wedding-platform.onrender.com/api/wedding';  
   //const String baseUrl = 'http://192.168.86.22:4000/api/wedding'; // ✅ Use your Mac's IP here  
   final String endpoint = '$baseUrl/$code';
-
+  print("Retrieving wedding data from $endpoint");
+  print("isAdminMode: $isAdminMode");
+  print("code: $code");
   try {
     final response = await http.get(
       Uri.parse(endpoint),

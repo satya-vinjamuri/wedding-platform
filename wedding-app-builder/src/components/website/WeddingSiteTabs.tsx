@@ -60,9 +60,37 @@ export default function WeddingSiteTabs({ data }: { data: any }) {
                 M: 'Mehndi',
                 BH: 'BrideHaldi',
                 GH: 'GroomHaldi',
-                V: "Vidhi",
-                SN: "Snathakam",
+                V: 'Vidhi',
+                B: 'Baraat',
+                K: 'Kanyadaan',
+                MP: 'MangalPheras',
+                SD: 'SindoorDaan',
+                MS: 'Mangalsutra',
+                GR: 'GrahShanti',
+                VP: 'VarmalaPhoolMala',
+                AN: 'Antrapat',
+                KY: 'KashiYatra',
+                MM: 'MaalaiMaatral',
+                ST: 'Sthaalipaakam',
+                SN: 'Snathakam',
+                G: 'GrihaPravesh',
+                MD: 'MoohDikhai',
+                PF: 'PagPhera',
+                SV: 'SatyanarayanKatha',
+                SR: 'SuhaagRaat',
+                DR: 'DwarRokai',
+                T: 'Tilak',
+                N: 'NischayTamulam',
+                L: 'LaganLikhai',
+                E: 'Engagement',
+                RK: 'Roka',
+                CH: 'Chooda',
+                KL: 'Kalire',
+                JP: 'JaanPrasthan',
+                JPJ: 'Jaimala',
+                HB: 'Haldi',
             };
+
 
             const id = extractSheetId(data.rsvpSheetUrl);
             const eventsResponse = await fetch(`/api/rsvp/events?sheetId=${id}`);
@@ -127,6 +155,7 @@ export default function WeddingSiteTabs({ data }: { data: any }) {
         }
     };
 
+    console.log("data, eventList, eventSummary", data, eventList, eventSummary);
     return (
         <div className="w-full min-h-screen max-w-4xl mx-auto ">
             <div className="border-b mb-4">
@@ -180,13 +209,24 @@ export default function WeddingSiteTabs({ data }: { data: any }) {
                     </div>
                 )}
                 {activeTab === 'weddingParty' && data.enableWeddingParty && (
-                    <div className="space-y-4">
-                        {data.weddingParty.map((p: any, i: number) => (
-                            <div key={i}>
-                                <h3 className="text-xl font-bold">{p.name}</h3>
-                                <p>{p.description}</p>
-                            </div>
-                        ))}
+                    <div className="flex justify-center w-full ml-[100px]">
+                        <div className="flex flex-col md:flex-row justify-center gap-12 max-w-4xl w-full px-4">
+                            {["bride", "groom"].map((side) => (
+                                <div key={side} className="w-full">
+                                    <h2 className="text-2xl font-bold capitalize mb-4 underline">
+                                        {side === "bride" ? `${data.brideName}'s family` : `${data.groomName}'s family`}
+                                    </h2>
+                                    <div className="space-y-4">
+                                        {data.weddingParty[side]?.map((person: any, i: number) => (
+                                            <div key={i}>
+                                                <h3 className="text-xl font-semibold">{person.name}</h3>
+                                                <p className="text-gray-600">{person.role}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
                 {activeTab === 'contact' && data.contactInfo?.length > 0 && <Contact form={data} />}

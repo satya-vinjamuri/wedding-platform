@@ -32,7 +32,9 @@ export default function Home() {
     const router = useRouter();
     const { user } = useAuth();
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [showTooltip, setShowTooltip] = useState(false);
     const [showTutorial, setShowTutorial] = useState(false);
     const [tutorialIndex, setTutorialIndex] = useState(0);
     const tutorialImages = ["/tutorial/step1.png", "/tutorial/step2.png", "/tutorial/step3.png", "/tutorial/step4.png"];
@@ -102,6 +104,12 @@ export default function Home() {
 
 
 
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 640); // sm breakpoint
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     // useEffect(() => {
     //     if (!user) return;
@@ -364,28 +372,34 @@ export default function Home() {
                                     />
                                 </div>
                             </div>
-
-
-                            <CalendarPage form={form} setForm={setForm} />
+                            <div>
+                                <CalendarPage form={form} setForm={setForm} />
+                            </div>
                         </div>
 
                         {/* Right Column: App Name + Toggles */}
-                        <div className="flex-1 min-w-0 my-14">
+                        <div className={`flex-1 min-w-0 ${isMobile ? "mt-[-40px]" : "my-14"}  `}>
                             <div className="flex items-center gap-2 mb-2">
-                                <Label className="text-black font-bold text-lg">Name of App</Label>
-                                <div className="relative group cursor-pointer">
-                                    <span className="text-white bg-gray-500 rounded-full px-2 text-xs font-bold">?</span>
-                                    <div className="absolute z-10 hidden group-hover:block w-64 p-2 bg-black text-white text-sm rounded shadow-lg top-full mt-1">
-                                        Enter the name you would want for your wedding app.
+                                <Label className="text-black font-bold text-lg">My Wedding Code</Label>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowTooltip(!showTooltip)}
+                                    className="text-white bg-gray-500 rounded-full px-2 text-xs font-bold"
+                                >
+                                    ?
+                                </button>
+                                {showTooltip && (
+                                    <div className="absolute left-0 mt-[-150px] sm:mt-1 sm:left-auto sm:right-0 z-10 w-[90vw] sm:w-[280px] p-3 bg-black text-white text-sm rounded shadow-lg whitespace-pre-line break-words">
+                                        Enter the code you want your guests to use to access your wedding details.
                                     </div>
-                                </div>
+                                )}
                             </div>
 
                             <Input
                                 required
                                 className="w-full max-w-md bg-beige text-black border border-pink-300 px-4 py-2"
-                                value={form.appName}
-                                onChange={(e) => handleChange("appName", e.target.value)}
+                                value={form.websiteSlug}
+                                onChange={(e) => websiteSlug("appName", e.target.value)}
                                 disabled={isSubmitted || form?.zipGenerated}
                             />
 
@@ -397,7 +411,7 @@ export default function Home() {
                                     <Button
                                         key={field}
                                         className={`px-4 py-2 rounded-full border text-sm font-bold transition 
-        ${form[field]
+                                            ${form[field]
                                                 ? "bg-pink-400 text-white border-white"
                                                 : "bg-transparent text-black border-[#6B5A7A] hover:border-white"}`}
 
@@ -428,7 +442,7 @@ export default function Home() {
 
                             </div>
 
-                            <div className="mt-10">
+                            <div className={`mt-10 ${isMobile ? "mb-4" : ""}`}>
                                 <Button className="bg-pink-400 text-white font-bold" onClick={goNext}>Next</Button>
                             </div>
                         </div>

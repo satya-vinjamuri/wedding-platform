@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -47,14 +47,21 @@ const SaveTheDate: React.FC<SaveTheDateProps> = ({
     setForm,
     handleChange,
 }) => {
+    const [isMobile, setIsMobile] = useState(false);
     const isSubmitted = form.isSubmitted;
+    const [showTooltip, setShowTooltip] = useState(false);
     const handleToggle = (field: keyof SaveTheDateProps["form"]) => {
         setForm((prev: { [x: string]: any }) => ({
             ...prev,
             [field]: !prev[field],
         }));
     };
-
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 640); // sm breakpoint
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
     const handleImageChange = (file: File | null) => {
         setForm((prev: any) => ({ ...prev, saveTheDateImage: file }));
     };
@@ -149,11 +156,15 @@ const SaveTheDate: React.FC<SaveTheDateProps> = ({
                                         className="w-4 h-4"
                                     />
                                 </Label>
-
-                                {/* ✅ 4. Popover Help Tooltip */}
-                                <div className="relative group cursor-pointer">
-                                    <span className="text-white bg-gray-500 rounded-full px-2 text-xs font-bold">?</span>
-                                    <div className="absolute z-10 hidden group-hover:block w-80 p-3 bg-black text-white text-sm rounded shadow-lg top-full mt-1">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowTooltip(!showTooltip)}
+                                    className="text-white bg-gray-500 rounded-full px-2 text-xs font-bold"
+                                >
+                                    ?
+                                </button>
+                                {showTooltip && (
+                                    <div className="absolute mt-[-450px] sm:mt-1 sm:left-auto sm:right-0 z-10 w-[90vw] sm:w-[280px] p-3 bg-black text-white text-sm rounded shadow-lg whitespace-pre-line break-words">
                                         Paste a link to your RSVP Google Sheet.<br />
                                         ✅ Must be a Google Sheet URL<br />
                                         ✅ Set sharing to "Anyone with the link can view"<br /><br />
@@ -177,8 +188,7 @@ const SaveTheDate: React.FC<SaveTheDateProps> = ({
                                             View RSVP Template
                                         </a>
                                     </div>
-
-                                </div>
+                                )}
                             </div>
 
                             {/* ✅ 2. Placeholder Guidance, ✅ 3. Validation-ready */}

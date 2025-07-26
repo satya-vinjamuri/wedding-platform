@@ -33,7 +33,7 @@ export default function TextBlast({ onSend, groups }: TextBlastProps) {
             <h2 className="text-xl font-semibold">Send Text Blast</h2>
             <div className="flex flex-col md:flex-row justify-between items-center mb-4">
                 <div className="w-full md:w-1/2 mb-4 md:mb-0">
-                    <label className="block text-sm font-medium mb-2">Message Type:</label>
+                    <label className="block text-sm font-bold mb-2">Message Type:</label>
                     <select
                         value={messageType}
                         onChange={(e) => setMessageType(e.target.value)}
@@ -47,7 +47,7 @@ export default function TextBlast({ onSend, groups }: TextBlastProps) {
                     </select>
                 </div>
                 <div className="w-full md:w-1/2 ml-4">
-                    <label className="block text-sm font-medium mb-2">Message Title:</label>
+                    <label className="block text-sm font-bold mb-2">Message Title:</label>
                     <input
                         type="text"
                         value={messageTitle}
@@ -59,7 +59,7 @@ export default function TextBlast({ onSend, groups }: TextBlastProps) {
             </div>
             <div className="flex flex-col md:flex-row justify-between items-center mb-4">
                 <div className="w-full md:w-1/2 mb-4 md:mb-0">
-                    <label className="block text-sm font-medium mb-2">Target Group:</label>
+                    <label className="block text-sm font-bold mb-2">Target Group:</label>
                     <select
                         value={targetGroup}
                         onChange={(e) => setTargetGroup(e.target.value)}
@@ -75,7 +75,7 @@ export default function TextBlast({ onSend, groups }: TextBlastProps) {
                     </select>
                 </div>
                 <div className="w-full md:w-1/2 ml-4">
-                    <label className="block text-sm font-medium mb-2">Attach Image:</label>
+                    <label className="block text-sm font-bold mb-2">Attach Image:</label>
                     <input
                         type="file"
                         accept="image/*"
@@ -90,10 +90,10 @@ export default function TextBlast({ onSend, groups }: TextBlastProps) {
                 placeholder="Enter your message"
                 className="w-full border-black text-black"
             />
-            <Button onClick={handleSendTextBlast} disabled={sending} className="w-full border border-black text-black sm:w-auto">
+            <Button onClick={handleSendTextBlast} disabled={sending} className="w-full border border-black font-bold text-black sm:w-auto">
                 {sending ? 'Sending...' : 'Send Text Blast'}
             </Button>
-            <Button onClick={handleSendTextBlast} disabled={sending} className="w-full ml-2 border border-black text-black sm:w-auto">
+            <Button onClick={handleSendTextBlast} disabled={sending} className="w-full ml-2 border border-black font-bold text-black sm:w-auto">
                 View Previous Text Blasts
             </Button>
         </div>
