@@ -100,7 +100,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Send Custom Notification'),
+        title: const Text('Send Custom Notification', style: TextStyle(fontWeight: FontWeight.bold,  color: Colors.white)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

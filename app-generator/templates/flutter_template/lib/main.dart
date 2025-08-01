@@ -53,8 +53,23 @@ void main() async {
 
   // ✅ OneSignal Initialization
   OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
-  OneSignal.initialize('13a8752e-c3eb-4ece-b2d0-7118e3ebadea'); // Replace with actual App ID
+  OneSignal.initialize('13a8752e-c3eb-4ece-b2d0-7118e3ebadea');
   OneSignal.Notifications.requestPermission(true);
+
+  OneSignal.Notifications.addForegroundWillDisplayListener((event) {
+    event.notification.display(); // ✅ Display OS-level push
+  });
+  // 🛎️ OneSignal Permission Observer
+  OneSignal.Notifications.addPermissionObserver((bool hasPermission) {
+    debugPrint("🔐 Permission changed. Now granted: $hasPermission");
+  });
+
+  // 📲 OneSignal Subscription Observer
+  OneSignal.User.pushSubscription.addObserver((OSPushSubscriptionChangedState state) {
+    final id = state.current?.id;
+    final token = state.current?.token;
+    debugPrint("📲 Push subscription changed. ID: $id, Token: $token");
+  });
 
   runApp(const MyApp());
 }
@@ -139,39 +154,39 @@ class _StyledLandingPageState extends State<StyledLandingPage> {
     });
 
     // Check for stored wedding code
-  Future.delayed(const Duration(seconds: 2), () async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedCode = prefs.getString('activeWeddingCode');
-      debugPrint('🔎 Found saved code: $savedCode');
+    Future.delayed(const Duration(seconds: 2), () async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final savedCode = prefs.getString('activeWeddingCode');
+        debugPrint('🔎 Found saved code: $savedCode');
 
-      if (savedCode != null && savedCode.isNotEmpty) {
-        final data = await getCoupleDetails(savedCode);
-        debugPrint('📦 getCoupleDetails returned: $data');
+        if (savedCode != null && savedCode.isNotEmpty) {
+          final data = await getCoupleDetails(savedCode);
+          debugPrint('📦 getCoupleDetails returned: $data');
 
-        if (data != null) {
-          if (!mounted) return;
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => CoupleHomeScreen(weddingData: data),
-            ),
-          );
-          return;
+          if (data != null) {
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => CoupleHomeScreen(weddingData: data),
+              ),
+            );
+            return;
+          }
         }
+      } catch (e, stack) {
+        debugPrint('⚠️ Error loading saved couple details: $e');
+        debugPrint('$stack');
       }
-    } catch (e, stack) {
-      debugPrint('⚠️ Error loading saved couple details: $e');
-      debugPrint('$stack');
-    }
 
-    if (mounted) {
-      setState(() {
-        isLoading = false;
-        showIntro = false;
-      });
-    }
-  });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          showIntro = false;
+        });
+      }
+    });
 
   }
 
@@ -274,16 +289,18 @@ class _StyledLandingPageState extends State<StyledLandingPage> {
                 ElevatedButton(
                   onPressed: () async {
                     final prefs = await SharedPreferences.getInstance();
-                    debugPrint(prefs.getString('activeWeddingCode') ??
-                        'No active wedding code found');
                     final code = searchController.text.trim();
+
                     if (code.isNotEmpty) {
                       debugPrint('Searching for couple: $code');
                       final data = await getCoupleDetails(code);
                       if (data != null) {
                         await prefs.setString('activeWeddingCode', code);
-                        debugPrint(
-                            '✅ Couple found: ${data['brideName']} & ${data['groomName']}');
+
+                        // ✅ Add this to set the wedding_code tag for OneSignal
+                        await OneSignal.User.addTagWithKey("wedding_code", code);
+                        debugPrint("✅ Added tag: wedding_code = $code");
+                        debugPrint('✅ Couple found: ${data['brideName']} & ${data['groomName']}');
                         _showTopBanner(
                           context,
                           'Welcome to the Wedding of ${data['brideName']} & ${data['groomName']}',
@@ -291,15 +308,13 @@ class _StyledLandingPageState extends State<StyledLandingPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                CoupleHomeScreen(weddingData: data),
+                            builder: (context) => CoupleHomeScreen(weddingData: data),
                           ),
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content:
-                                Text('No wedding found with that code.'),
+                            content: Text('No wedding found with that code.'),
                             backgroundColor: Colors.redAccent,
                           ),
                         );
