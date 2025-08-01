@@ -6,14 +6,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:weddesigner/functions/getCoupleDetails.dart';
 import 'package:weddesigner/couple_home_screen.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart'; // ✅ OneSignal added
 
-// Background handler
+// Firebase background handler
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   debugPrint('🔔 Background message received: ${message.messageId}');
 }
 
-// Local notifications plugin
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
@@ -21,13 +21,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  // Background FCM handler
+  // Firebase background handler
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  // Request permission
+  // Firebase permissions
   await FirebaseMessaging.instance.requestPermission();
 
-  // Init local notifications
+  // Local notifications setup
   const AndroidInitializationSettings androidSettings =
       AndroidInitializationSettings('@mipmap/ic_launcher');
 
@@ -40,7 +40,6 @@ void main() async {
 
   await flutterLocalNotificationsPlugin.initialize(initSettings);
 
-
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
     'default_channel',
     'Wedding Notifications',
@@ -51,6 +50,11 @@ void main() async {
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
+
+  // ✅ OneSignal Initialization
+  OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+  OneSignal.initialize('13a8752e-c3eb-4ece-b2d0-7118e3ebadea'); // Replace with actual App ID
+  OneSignal.Notifications.requestPermission(true);
 
   runApp(const MyApp());
 }
@@ -98,12 +102,13 @@ class _StyledLandingPageState extends State<StyledLandingPage> {
   bool showSearch = false;
   bool showIntro = true;
   final TextEditingController searchController = TextEditingController();
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
 
-    // Foreground notifications
+    // Firebase foreground handler
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
@@ -127,12 +132,25 @@ class _StyledLandingPageState extends State<StyledLandingPage> {
       }
     });
 
-    Future.delayed(const Duration(seconds: 2), () async {
+    // ✅ OneSignal foreground handler
+    OneSignal.Notifications.addForegroundWillDisplayListener((event) {
+      // ✅ show the notification as native OS-level push
+      event.notification.display();
+    });
+
+    // Check for stored wedding code
+  Future.delayed(const Duration(seconds: 2), () async {
+    try {
       final prefs = await SharedPreferences.getInstance();
       final savedCode = prefs.getString('activeWeddingCode');
+      debugPrint('🔎 Found saved code: $savedCode');
+
       if (savedCode != null && savedCode.isNotEmpty) {
         final data = await getCoupleDetails(savedCode);
+        debugPrint('📦 getCoupleDetails returned: $data');
+
         if (data != null) {
+          if (!mounted) return;
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -142,9 +160,51 @@ class _StyledLandingPageState extends State<StyledLandingPage> {
           return;
         }
       }
+    } catch (e, stack) {
+      debugPrint('⚠️ Error loading saved couple details: $e');
+      debugPrint('$stack');
+    }
+
+    if (mounted) {
       setState(() {
+        isLoading = false;
         showIntro = false;
       });
+    }
+  });
+
+  }
+
+  void _showTopBanner(BuildContext context, String message) {
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).padding.top + 10,
+        left: 20,
+        right: 20,
+        child: Material(
+          elevation: 6,
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.greenAccent,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Text(
+              message,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    Future.delayed(const Duration(seconds: 3), () {
+      overlayEntry.remove();
     });
   }
 
@@ -224,12 +284,9 @@ class _StyledLandingPageState extends State<StyledLandingPage> {
                         await prefs.setString('activeWeddingCode', code);
                         debugPrint(
                             '✅ Couple found: ${data['brideName']} & ${data['groomName']}');
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                                'Welcome to the Wedding of ${data['brideName']} & ${data['groomName']}'),
-                            backgroundColor: Colors.greenAccent,
-                          ),
+                        _showTopBanner(
+                          context,
+                          'Welcome to the Wedding of ${data['brideName']} & ${data['groomName']}',
                         );
                         Navigator.push(
                           context,
