@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:weddesigner/main.dart';
 import 'package:weddesigner/functions/sendNotifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:weddesigner/ui/app.dart';
 
 class SettingsScreen extends StatefulWidget {
   final Map<String, dynamic> weddingData;

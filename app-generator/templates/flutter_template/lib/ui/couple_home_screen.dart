@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:weddesigner/common/layout/layout.dart'; // adjust the path if needed
-import 'package:weddesigner/rsvpForm.dart'; // adjust the path if needed
+import 'package:weddesigner/ui/rsvpForm.dart'; // adjust the path if needed
 import 'package:intl/intl.dart';
 import 'dart:async';
 
