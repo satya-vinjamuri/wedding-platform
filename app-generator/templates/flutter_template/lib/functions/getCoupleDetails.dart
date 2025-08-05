@@ -10,13 +10,12 @@ Future<Map<String, dynamic>?> getCoupleDetails(String code) async {
   }
 
   code = code.toLowerCase().replaceAll(RegExp(r'(?<=[a-z])(?=[A-Z])'), '-');
-  //const String baseUrl = 'http://localhost:4000/api/wedding';
-  const String baseUrl = 'https://wedding-platform.onrender.com/api/wedding';  
-  //const String baseUrl = 'http://192.168.86.22:4000/api/wedding'; // ✅ Use your Mac's IP here  
+  const String baseUrl = 'https://wedding-platform.onrender.com/api/wedding';
   final String endpoint = '$baseUrl/$code';
   print("Retrieving wedding data from $endpoint");
   print("isAdminMode: $isAdminMode");
   print("code: $code");
+
   try {
     final response = await http.get(
       Uri.parse(endpoint),
@@ -29,39 +28,22 @@ Future<Map<String, dynamic>?> getCoupleDetails(String code) async {
 
       final prefs = await SharedPreferences.getInstance();
 
-      // 🔄 Unsubscribe from old topic
-      final previousTopic = prefs.getString('subscribedTopic');
-      if (previousTopic != null && previousTopic != code) {
-        await FirebaseMessaging.instance.unsubscribeFromTopic(previousTopic);
-        print("🔕 Unsubscribed from $previousTopic");
-      }
-
-      // ✅ Ensure valid FCM token before subscribing
-      String? token;
-      int retries = 0;
-      while (token == null && retries < 5) {
-        token = await FirebaseMessaging.instance.getToken();
-        if (token == null) {
-          await Future.delayed(const Duration(seconds: 1));
-          retries++;
-        }
-      }
-
-      if (token == null) {
-        print('❌ FCM token unavailable after 5 retries. Aborting topic subscription.');
-        return null;
-      }
-
-      print('📲 FCM token: $token');
-
-      // ✅ Subscribe to topic
+      // ✅ Subscribe to topic (no unsubscribe here to allow multiple)
       await FirebaseMessaging.instance.subscribeToTopic(code);
       print("📲 Subscribed to topic: $code");
 
-      // Save state
-      await prefs.setString('subscribedTopic', code);
-      await prefs.setBool('isAdmin', isAdminMode);
+      // ✅ Save to list of wedding codes
+      List<String> savedCodes = prefs.getStringList('weddingCodes') ?? [];
+      if (!savedCodes.contains(code)) {
+        savedCodes.add(code);
+        await prefs.setStringList('weddingCodes', savedCodes);
+        print("📌 Saved wedding codes: $savedCodes");
+      }
 
+      // ✅ Save the active code
+      await prefs.setString('activeWeddingCode', code);
+      await prefs.setBool('isAdmin', isAdminMode);
+      
       return data;
     } else {
       print('❌ Wedding not found: ${response.statusCode} - ${response.body}');
@@ -72,3 +54,4 @@ Future<Map<String, dynamic>?> getCoupleDetails(String code) async {
     return null;
   }
 }
+

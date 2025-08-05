@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:weddesigner/common/layout/layout.dart';
 
 class OurFamilyScreen extends StatelessWidget {
   final Map<String, dynamic> weddingData;
@@ -75,7 +74,7 @@ class OurFamilyScreen extends StatelessWidget {
               style: GoogleFonts.montserrat(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: Colors.white,
               ),
             ),
             Text(
@@ -83,7 +82,7 @@ class OurFamilyScreen extends StatelessWidget {
               style: GoogleFonts.montserrat(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: Colors.white,
               ),
             ),
           ],
@@ -133,25 +132,29 @@ class OurFamilyScreen extends StatelessWidget {
     final brideSide = weddingParty['bride'] ?? [];
     final groomSide = weddingParty['groom'] ?? [];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Our Family',
-          style: GoogleFonts.montserrat(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 75),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // "App bar" title
+          Padding(
+            padding: const EdgeInsets.only(bottom: 24),
+            child: Center(
+              child: Text(
+                'Our Family',
+                style: GoogleFonts.montserrat(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
           ),
-        ),
-        backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: Layout(
-        title: '',
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: _buildTwoColumnLayout(brideSide, groomSide),
-        ),
+
+          // Two-column layout
+          _buildTwoColumnLayout(brideSide, groomSide),
+        ],
       ),
     );
   }

@@ -42,7 +42,7 @@ class Layout extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.home, color: Colors.white),
               onPressed: () {
-                Navigator.push(
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
                     builder: (_) => CoupleHomeScreen(weddingData: data ?? {}),
@@ -57,7 +57,11 @@ class Layout extends StatelessWidget {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => OurFamilyScreen(weddingData: data ?? {}),
+                      builder: (_) => Layout(
+                        title: 'Our Family',
+                        body: OurFamilyScreen(weddingData: data ?? {}),
+                        weddingData: data,
+                      ),
                     ),
                   );
                 },
@@ -66,10 +70,14 @@ class Layout extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.photo_library, color: Colors.white),
                 onPressed: () {
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => DriveGalleryScreen(weddingData: data ?? {}),
+                      builder: (_) => Layout(
+                        title: 'Gallery',
+                        body: DriveGalleryScreen(weddingData: data ?? {}),
+                        weddingData: data,
+                      ),
                     ),
                   );
                 },
@@ -77,10 +85,14 @@ class Layout extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.calendar_today, color: Colors.white),
               onPressed: () {
-                Navigator.push(
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => ItineraryScreen(weddingData: data ?? {}),
+                    builder: (_) => Layout(
+                      title: 'Itinerary',
+                      body: ItineraryScreen(weddingData: data ?? {}),
+                      weddingData: data,
+                    ),
                   ),
                 );
               },
@@ -88,10 +100,14 @@ class Layout extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.settings, color: Colors.white),
               onPressed: () {
-                Navigator.push(
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => SettingsScreen(weddingData: data ?? {}),
+                    builder: (_) => Layout(
+                      title: 'Settings',
+                      body: SettingsScreen(weddingData: data ?? {}),
+                      weddingData: data,
+                    ),
                   ),
                 );
               },

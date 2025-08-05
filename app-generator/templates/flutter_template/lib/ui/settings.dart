@@ -207,7 +207,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ElevatedButton.icon(
               onPressed: () async {
                 final prefs = await SharedPreferences.getInstance();
-                await prefs.clear(); // Clear stored data including wedding info and admin flag
+                await prefs.remove('activeWeddingCode'); // <-- Remove only the active one
 
                 Navigator.pushAndRemoveUntil(
                   context,

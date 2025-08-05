@@ -53,9 +53,8 @@ class StyledLandingPage extends StatefulWidget {
 
 class _StyledLandingPageState extends State<StyledLandingPage> {
   bool showSearch = false;
-  bool showIntro = true;
+  bool showIntro = false;
   final TextEditingController searchController = TextEditingController();
-  bool isLoading = true;
 
   @override
   void initState() {
@@ -88,35 +87,59 @@ class _StyledLandingPageState extends State<StyledLandingPage> {
       event.notification.display();
     });
 
-    Future.delayed(const Duration(seconds: 2), () async {
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final savedCode = prefs.getString('activeWeddingCode');
-        debugPrint('🔎 Found saved code: $savedCode');
+    _initializeApp();
+  }
 
-        if (savedCode != null && savedCode.isNotEmpty) {
-          final data = await getCoupleDetails(savedCode);
-          debugPrint('📦 getCoupleDetails returned: $data');
+  Future<void> _initializeApp() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
 
-          if (data != null) {
-            if (!mounted) return;
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => CoupleHomeScreen(weddingData: data),
-              ),
-            );
-            return;
-          }
-        }
-      } catch (e, stack) {
-        debugPrint('⚠️ Error loading saved couple details: $e');
-        debugPrint('$stack');
+      final hasSeenIntro = prefs.getBool('hasSeenIntro') ?? false;
+      if (!hasSeenIntro) {
+        setState(() {
+          showIntro = true;
+        });
       }
 
+      final codes = prefs.getStringList('weddingCodes') ?? [];
+      final savedCode = prefs.getString('activeWeddingCode');
+      print("Codes: $codes");
+      print("prefs $prefs");
+      if (codes.length > 1) {
+        // Show wedding selector
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => WeddingSelectorScreen(codes: codes),
+            ),
+          );
+        });
+        return;
+      }
+
+      if (savedCode != null && savedCode.isNotEmpty) {
+        final data = await getCoupleDetails(savedCode);
+        if (data != null && mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => CoupleHomeScreen(weddingData: data),
+            ),
+          );
+          return;
+        }
+      }
+    } catch (e, stack) {
+      debugPrint('⚠️ Error loading saved couple details: $e');
+      debugPrint('$stack');
+    }
+
+    Future.delayed(const Duration(seconds: 2), () async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('hasSeenIntro', true);
       if (mounted) {
         setState(() {
-          isLoading = false;
           showIntro = false;
         });
       }
@@ -183,8 +206,14 @@ class _StyledLandingPageState extends State<StyledLandingPage> {
                         onSearchCompleted: (data, code) async {
                           final prefs = await SharedPreferences.getInstance();
                           await prefs.setString('activeWeddingCode', code);
+
+                          final existing = prefs.getStringList('weddingCodes') ?? [];
+                          if (!existing.contains(code)) {
+                            existing.add(code);
+                            await prefs.setStringList('weddingCodes', existing);
+                          }
+
                           await OneSignal.User.addTagWithKey("wedding_code", code);
-                          debugPrint("✅ Added tag: wedding_code = $code");
                           _showTopBanner(
                             context,
                             'Welcome to the Wedding of ${data['brideName']} & ${data['groomName']}',
@@ -206,6 +235,7 @@ class _StyledLandingPageState extends State<StyledLandingPage> {
                     : WelcomeView(
                         onFindWeddingPressed: () {
                           setState(() {
+                            showIntro = false;
                             showSearch = true;
                           });
                         },
@@ -215,4 +245,167 @@ class _StyledLandingPageState extends State<StyledLandingPage> {
       ),
     );
   }
+}
+
+class WeddingSelectorScreen extends StatefulWidget {
+  final List<String> codes;
+
+  const WeddingSelectorScreen({super.key, required this.codes});
+
+  @override
+  State<WeddingSelectorScreen> createState() => _WeddingSelectorScreenState();
+}
+
+class _WeddingSelectorScreenState extends State<WeddingSelectorScreen> {
+  late Future<List<Map<String, dynamic>>> weddingsFuture;
+  final TextEditingController searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    weddingsFuture = _loadWeddingDetails(widget.codes);
+  }
+
+  Future<List<Map<String, dynamic>>> _loadWeddingDetails(List<String> codes) async {
+    List<Map<String, dynamic>> results = [];
+    for (final code in codes) {
+      final data = await getCoupleDetails(code);
+      if (data != null) {
+        data['code'] = code; // Attach code back for selection
+        results.add(data);
+      }
+    }
+    return results;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0D0208),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0D0208),
+        title: const Text('Select a Wedding'),
+      ),
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: weddingsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final weddings = snapshot.data ?? [];
+
+          if (weddings.isEmpty) {
+            return const Center(
+              child: Text(
+                'No valid weddings found.',
+                style: TextStyle(color: Colors.white),
+              ),
+            );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: searchController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Enter wedding code',
+                          hintStyle: const TextStyle(color: Colors.white54),
+                          filled: true,
+                          fillColor: Colors.black26,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final code = searchController.text.trim();
+                        if (code.isEmpty) return;
+
+                        final data = await getCoupleDetails(code);
+                        if (data != null) {
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.setString('activeWeddingCode', code);
+                          final existing = prefs.getStringList('weddingCodes') ?? [];
+                          if (!existing.contains(code)) {
+                            existing.add(code);
+                            await prefs.setStringList('weddingCodes', existing);
+                          }
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CoupleHomeScreen(weddingData: data),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('No wedding found with that code.'),
+                              backgroundColor: Colors.redAccent,
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Icon(Icons.search),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(color: Colors.white54),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: weddings.length,
+                  itemBuilder: (context, index) {
+                    final wedding = weddings[index];
+                    final code = wedding['code'];
+                    final bride = wedding['brideName'] ?? '';
+                    final groom = wedding['groomName'] ?? '';
+                    final month = wedding['weddingMonth'] ?? '';
+                    final year = wedding['weddingYear'] ?? '';
+
+                    return ListTile(
+                      title: Text(
+                        "$bride & $groom's Wedding ${month.toString().padLeft(2, '0')}-$year",
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                      onTap: () async {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setString('activeWeddingCode', code);
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CoupleHomeScreen(weddingData: wedding),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
 }

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 
 const Map<String, String> eventCodeMap = {
   'W': 'Wedding Ceremony',
@@ -29,15 +29,16 @@ class _RSVPFormScreenState extends State<RSVPFormScreen> {
   final phoneController = TextEditingController();
 
   String sheetId = '';
-  int? allowedGuests;
-  int selectedGuestCount = 1;
+  bool loading = false;
   bool isFound = false;
   bool isConfirmed = false;
   String statusMessage = '';
-  bool loading = false;
+  int selectedGuestCount = 1;
+  int? allowedGuests;
 
   List<String> invitedEvents = [];
   Map<String, String> rsvpChoices = {};
+  int currentQuestionIndex = 0;
 
   String get googleScriptUrl =>
       'https://script.google.com/macros/s/AKfycbyBCO4ZfeL0StEecuR0UnlT8YCos5fT1Nh_swoKqH57sMn9-NmFIFl2hMKrobdw1jv5/exec?sheetId=$sheetId';
@@ -52,11 +53,7 @@ class _RSVPFormScreenState extends State<RSVPFormScreen> {
     final RegExp regExp = RegExp(r'd/([^/]+)/');
     final match = regExp.firstMatch(widget.weddingData['rsvpSheetUrl'] ?? '');
     if (match != null) {
-      setState(() {
-        sheetId = match.group(1)!;
-      });
-    } else {
-      debugPrint("No valid sheet ID found");
+      sheetId = match.group(1)!;
     }
   }
 
@@ -84,9 +81,10 @@ class _RSVPFormScreenState extends State<RSVPFormScreen> {
         );
 
         if (guest != null) {
-          debugPrint("Guest found: $guest");
           final raw = guest['Events']?.toString() ?? '';
-          final rawCodes = raw == 'AllEvents' ? eventCodeMap.keys.toList() : raw.split(',');
+          final rawCodes = raw == 'AllEvents'
+              ? eventCodeMap.keys.toList()
+              : raw.split(',');
 
           final mappedEvents = rawCodes
               .map((code) => code.trim())
@@ -101,18 +99,25 @@ class _RSVPFormScreenState extends State<RSVPFormScreen> {
             isConfirmed = guest['RSVPStatus'] == 'Confirmed';
             invitedEvents = mappedEvents;
             rsvpChoices = {for (var e in mappedEvents) e: ''};
+            currentQuestionIndex = 0;
           });
         } else {
-          statusMessage = "Guest not found. Please check your details.";
+          setState(() {
+            statusMessage = "Guest not found. Please check your details.";
+          });
         }
       } else {
-        statusMessage = "Server error: ${res.statusCode}";
+        setState(() {
+          statusMessage = "Server error: ${res.statusCode}";
+        });
       }
     } catch (e) {
-      statusMessage = "Unexpected error: $e";
+      setState(() {
+        statusMessage = "Unexpected error: $e";
+      });
+    } finally {
+      setState(() => loading = false);
     }
-
-    setState(() => loading = false);
   }
 
   Future<void> submitRSVP() async {
@@ -139,22 +144,68 @@ class _RSVPFormScreenState extends State<RSVPFormScreen> {
       );
 
       if (response.statusCode == 200) {
-        setState(() {
-          isConfirmed = true;
-        });
+        setState(() => isConfirmed = true);
       } else {
-        statusMessage = "Failed to submit RSVP: ${response.statusCode}";
+        setState(() {
+          statusMessage = "Failed to submit RSVP: ${response.statusCode}";
+        });
       }
     } catch (e) {
-      statusMessage = "Unexpected error: $e";
+      setState(() {
+        statusMessage = "Unexpected error: $e";
+      });
+    } finally {
+      setState(() => loading = false);
     }
-
-    setState(() => loading = false);
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLastStep = currentQuestionIndex >= invitedEvents.length;
+
+    // ✅ Early return for RSVP confirmed
+    if (isConfirmed) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          title: Text('RSVP', style: GoogleFonts.montserrat(color: Colors.white)),
+          backgroundColor: Colors.black,
+          iconTheme: const IconThemeData(color: Colors.white),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "✅ RSVP Confirmed!",
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                "We can't wait to celebrate with you!",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    isConfirmed = false;
+                    rsvpChoices = {for (var e in invitedEvents) e: ''};
+                    currentQuestionIndex = 0;
+                  });
+                },
+                child: const Text("Update RSVP"),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: Text('RSVP', style: GoogleFonts.montserrat(color: Colors.white)),
         backgroundColor: Colors.black,
@@ -202,77 +253,105 @@ class _RSVPFormScreenState extends State<RSVPFormScreen> {
                         ),
                       ),
                     ],
-                    if (isFound && !isConfirmed && allowedGuests != null) ...[
-                      const SizedBox(height: 16),
-                      Text('${nameController.text.trim()}'
-                          '${(allowedGuests ?? 0) > 1 ? ' and family' : ''}', style: GoogleFonts.montserrat(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white), ),
-                      const SizedBox(height: 16),
-                      ...invitedEvents.map((event) => Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Will you attend $event?', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, color: Colors.white)),
-                              Row(
-                                children: [
-                                  Radio<String>(
-                                    value: 'yes',
-                                    groupValue: rsvpChoices[event],
-                                    onChanged: (val) {
-                                      setState(() => rsvpChoices[event] = val!);
-                                    },
-                                  ),
-                                  const Text('Yes', style: TextStyle(color: Colors.white)),
-                                  Radio<String>(
-                                    value: 'no',
-                                    groupValue: rsvpChoices[event],
-                                    onChanged: (val) {
-                                      setState(() => rsvpChoices[event] = val!);
-                                    },
-                                  ),
-                                  const Text('No', style: TextStyle(color: Colors.white)),
-                                ],
-                              ),
-                            ],
-                          )),
-                      const SizedBox(height: 12),
-                      Text('Guests Attending', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, color: Colors.white)),
-                      DropdownButton<int>(
-                        value: selectedGuestCount,
-                        onChanged: (val) => setState(() => selectedGuestCount = val!),
-                        items: List.generate(allowedGuests!, (i) => i + 1)
-                            .map((e) => DropdownMenuItem(value: e, child: Text('$e', style: GoogleFonts.montserrat(color: Colors.white))))
-                            .toList(),
+                    if (isFound && allowedGuests != null) ...[
+                      Text(
+                        '${nameController.text.trim()}${allowedGuests! > 1 ? ' and family' : ''}',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: rsvpChoices.values.any((v) => v.isNotEmpty)
-                            ? submitRSVP
-                            : null,
-                        child: const Text("Submit RSVP"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD8A3A7),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(32),
+                      const SizedBox(height: 24),
+
+                      if (!isLastStep)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Will you attend ${invitedEvents[currentQuestionIndex]}?',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Radio<String>(
+                                  value: 'yes',
+                                  groupValue: rsvpChoices[invitedEvents[currentQuestionIndex]],
+                                  onChanged: (val) {
+                                    setState(() => rsvpChoices[invitedEvents[currentQuestionIndex]] = val!);
+                                  },
+                                ),
+                                const Text('Yes', style: TextStyle(color: Colors.white)),
+                                Radio<String>(
+                                  value: 'no',
+                                  groupValue: rsvpChoices[invitedEvents[currentQuestionIndex]],
+                                  onChanged: (val) {
+                                    setState(() => rsvpChoices[invitedEvents[currentQuestionIndex]] = val!);
+                                  },
+                                ),
+                                const Text('No', style: TextStyle(color: Colors.white)),
+                              ],
+                            ),
+                          ],
+                        ),
+
+                      if (isLastStep) ...[
+                        Text(
+                          'Guests Attending',
+                          style: GoogleFonts.montserrat(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 16),
-                        ),                        
+                        ),
+                        DropdownButton<int>(
+                          dropdownColor: Colors.grey[900],
+                          value: selectedGuestCount,
+                          onChanged: (val) => setState(() => selectedGuestCount = val!),
+                          items: List.generate(allowedGuests!, (i) => i + 1)
+                              .map((e) => DropdownMenuItem(
+                                    value: e,
+                                    child: Text('$e', style: GoogleFonts.montserrat(color: Colors.white)),
+                                  ))
+                              .toList(),
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: rsvpChoices.values.any((v) => v.isNotEmpty)
+                              ? submitRSVP
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFD8A3A7),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(32),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                          ),
+                          child: const Text("Submit RSVP", style: TextStyle(color: Colors.white)),
+                        ),
+                      ],
+
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          if (currentQuestionIndex > 0)
+                            ElevatedButton(
+                              onPressed: () => setState(() => currentQuestionIndex--),
+                              child: const Text("Back"),
+                            ),
+                          if (!isLastStep)
+                            ElevatedButton(
+                              onPressed: () => setState(() => currentQuestionIndex++),
+                              child: const Text("Next"),
+                            ),
+                        ],
                       ),
                     ],
-                    if (isConfirmed) ...[
-                      const SizedBox(height: 30),
-                      const Text("✅ Thank you for confirming your RSVP!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-                      const Text("We're excited to have you celebrate our special day with us!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            isConfirmed = false;
-                            rsvpChoices = {for (var e in invitedEvents) e: ''};
-                          });
-                        },
-                        child: const Text("Click here to update your RSVP", style: TextStyle(color: Colors.white)),
-                      ),
-                    ]
                   ],
                 ),
               ),

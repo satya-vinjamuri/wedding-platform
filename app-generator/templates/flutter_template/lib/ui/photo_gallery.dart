@@ -71,68 +71,51 @@ class _DriveGalleryScreenState extends State<DriveGalleryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Photo Gallery',
-          style: GoogleFonts.montserrat(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-          ),
-        ),
-        backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: Layout(
-        title: "Photo Gallery",
-        body: imageUrls == null
-            ? const Center(child: CircularProgressIndicator())
-            : RefreshIndicator(
-                onRefresh: () async {
-                  cachedImageUrls = null;
-                  await fetchImagesFromDrive();
-                },
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(12),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                  ),
-                  itemCount: imageUrls!.length,
-                  itemBuilder: (context, index) {
-                    final url = imageUrls![index];
-                    final isCircle = index % 2 == 0;
+    return imageUrls == null
+        ? const Center(child: CircularProgressIndicator())
+        : RefreshIndicator(
+            onRefresh: () async {
+              cachedImageUrls = null;
+              await fetchImagesFromDrive();
+            },
+            child: GridView.builder(
+              padding: const EdgeInsets.all(12),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+              ),
+              itemCount: imageUrls!.length,
+              itemBuilder: (context, index) {
+                final url = imageUrls![index];
+                final isCircle = index % 2 == 0;
 
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => FullImageView(imageUrl: url),
-                          ),
-                        );
-                      },
-                      child: ClipRRect(
-                        borderRadius:
-                            BorderRadius.circular(isCircle ? 999 : 12),
-                        child: CachedNetworkImage(
-                          imageUrl: url,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              const Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.error),
-                        ),
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => FullImageView(imageUrl: url),
                       ),
                     );
                   },
-                ),
-              ),
-      ),
-    );
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(isCircle ? 999 : 12),
+                    child: CachedNetworkImage(
+                      imageUrl: url,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) =>
+                          const Center(child: CircularProgressIndicator()),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
   }
+
 }
 
 class FullImageView extends StatelessWidget {
