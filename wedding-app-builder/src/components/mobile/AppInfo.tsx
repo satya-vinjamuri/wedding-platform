@@ -45,6 +45,12 @@ export default function Home() {
 
 
     useEffect(() => {
+        if (!showTooltip) return;
+        const timer = setTimeout(() => setShowTooltip(false), 2500);
+        return () => clearTimeout(timer);
+    }, [showTooltip]);
+
+    useEffect(() => {
         const fetchSavedForm = async () => {
             if (!user) return;
 
@@ -399,7 +405,7 @@ export default function Home() {
                                 required
                                 className="w-full max-w-md bg-beige text-black border border-pink-300 px-4 py-2"
                                 value={form.websiteSlug}
-                                onChange={(e) => websiteSlug("appName", e.target.value)}
+                                onChange={(e) => handleChange("websiteSlug", e.target.value)}
                                 disabled={isSubmitted || form?.zipGenerated}
                             />
 
@@ -483,5 +489,4 @@ export default function Home() {
         </main >
     );
 }
-
 

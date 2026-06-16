@@ -134,7 +134,7 @@ export default function Preview({ form, goBack, navigateToSection, isSubmitted }
                     <p className="mt-4 text-sm text-red-500 font-bold italic bg-petal px-4 py-2 rounded-md border max-w-2xl">
                         Please remember this is just a preview and not what your app will actually look like!
                     </p>
-                </div>                
+                </div>
             )}
 
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-center gap-12">
@@ -157,20 +157,20 @@ export default function Preview({ form, goBack, navigateToSection, isSubmitted }
                     </div>
                 </div>
 
-                    <div className="flex flex-col items-center gap-4 pb-12">
-                        
-                        {!isSubmitted && (
-                            <div>
-                                <h2 className="text-2xl font-semibold text-black">{form.appName}</h2>                            
-                                <Button className="w-[200px] bg-pink-400 text-white font-bold" onClick={() => setShowConfirmModal(true)} disabled={isSubmitted || form?.zipGenerated}>
-                                    Build My App
-                                </Button>
-                            </div>
-                        )}
-                        <Button variant="outline" className="w-[200px] font-bold" onClick={goBack}>
-                            Back
-                        </Button>
-                    </div>                    
+                <div className="flex flex-col items-center gap-4 pb-12">
+
+                    {!isSubmitted && (
+                        <div>
+                            <h2 className="text-2xl font-semibold text-black">{form.appName}</h2>
+                            <Button className="w-[200px] bg-pink-400 text-white font-bold" onClick={() => setShowConfirmModal(true)} disabled={isSubmitted || form?.zipGenerated}>
+                                Publish Site & Mobile
+                            </Button>
+                        </div>
+                    )}
+                    <Button variant="outline" className="w-[200px] font-bold" onClick={goBack}>
+                        Back
+                    </Button>
+                </div>
 
 
             </div>

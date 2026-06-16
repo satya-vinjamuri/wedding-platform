@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "312800294406",
+    "project_id": "wedding-app-builder",
+    "storage_bucket": "wedding-app-builder.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:312800294406:android:72b81ddd4361fe0eff7587",
+        "android_client_info": {
+          "package_name": "com.satyavinjamuri.wedDesigner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "312800294406-gkvovjo4cvt530pq2holft26pvf69c8d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtcEiS-QxKKOB97dKSYnXRq29gOD0ZQLM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "312800294406-gkvovjo4cvt530pq2holft26pvf69c8d.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "312800294406-rj6b7g1pf86dvlep3hijb9u4hglmv71v.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.satyavinjamuri.wedDesigner"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

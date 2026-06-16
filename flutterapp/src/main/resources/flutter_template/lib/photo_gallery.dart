@@ -4,10 +4,22 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_template/common/layout/layout.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_template/providers/wedding_config_provider.dart';
 
 List<String>? cachedImageUrls;
+String? _cachedForFolderId;
+
+/// Extracts a Google Drive folder ID from a couple's pasted share link.
+/// Accepts formats like:
+///   https://drive.google.com/drive/folders/<id>?usp=sharing
+///   https://drive.google.com/drive/u/0/folders/<id>
+String? _extractFolderId(String driveUrl) {
+  final match = RegExp(r'/folders/([a-zA-Z0-9_-]+)').firstMatch(driveUrl);
+  return match?.group(1);
+}
 
 class DriveGalleryScreen extends StatefulWidget {
   const DriveGalleryScreen({super.key});
@@ -17,29 +29,38 @@ class DriveGalleryScreen extends StatefulWidget {
 }
 
 class _DriveGalleryScreenState extends State<DriveGalleryScreen> {
-  final String apiKey = 'AIzaSyCQ_bDNPRmrL5ScIJi7ypUQ-vpA5E9UveU';
-  final String folderId = '{{DRIVE_FOLDER_ID}}';
+  // TODO(security): this key is bundled into the client app. Move gallery
+  // fetches behind a server-side proxy/Cloud Function before shipping, so
+  // the Drive API key never ships inside the app binary.
+  static const String _apiKey = 'AIzaSyCQ_bDNPRmrL5ScIJi7ypUQ-vpA5E9UveU';
 
   List<String>? imageUrls;
   bool isFetching = false;
+  String? folderId;
 
   @override
-  void initState() {
-    super.initState();
-    if (cachedImageUrls == null) {
-      fetchImagesFromDrive();
-    } else {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final driveUrl =
+        context.read<WeddingConfigProvider>().config?.galleryDriveUrl ?? '';
+    folderId = _extractFolderId(driveUrl);
+
+    if (folderId == null) return;
+
+    if (cachedImageUrls != null && _cachedForFolderId == folderId) {
       imageUrls = cachedImageUrls;
+    } else if (!isFetching) {
+      fetchImagesFromDrive();
     }
   }
 
   Future<void> fetchImagesFromDrive() async {
-    if (isFetching) return;
+    if (isFetching || folderId == null) return;
     setState(() => isFetching = true);
 
     final url = 'https://www.googleapis.com/drive/v3/files?q='
         "'$folderId'+in+parents+and+mimeType+contains+'image/'"
-        '&key=$apiKey&fields=files(id,name)';
+        '&key=$_apiKey&fields=files(id,name)';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -51,6 +72,7 @@ class _DriveGalleryScreenState extends State<DriveGalleryScreen> {
             .map<String>((file) =>
                 'https://drive.google.com/uc?export=view&id=${file['id']}')
             .toList();
+        _cachedForFolderId = folderId;
 
         if (mounted) {
           setState(() => imageUrls = cachedImageUrls);
@@ -84,7 +106,14 @@ class _DriveGalleryScreenState extends State<DriveGalleryScreen> {
       ),
       body: Layout(
         title: "Photo Gallery",
-        body: imageUrls == null
+        body: folderId == null
+            ? Center(
+                child: Text(
+                  'No gallery has been set up yet.',
+                  style: GoogleFonts.merriweather(fontSize: 15, color: Colors.black54),
+                ),
+              )
+            : imageUrls == null
             ? const Center(child: CircularProgressIndicator())
             : RefreshIndicator(
                 onRefresh: () async {

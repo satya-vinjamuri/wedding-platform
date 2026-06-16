@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const generateAppRoute = require('./routes/generateApp');
 const weddingRoute = require('./routes/wedding');
 const { sendBlastNotification } = require('./routes/sendNotification'); // ✅ Import the correct function
 require('dotenv').config();
@@ -60,8 +59,10 @@ app.post('/send-blast', async (req, res) => {
   }
 });
 
-app.use('/api/generate-app', generateAppRoute);
-app.use('/api/wedding', weddingRoute); // ✅ Wedding API route
+// NOTE: /api/generate-app (per-couple ZIP export) was removed — the Flutter
+// app now reads WeddingConfig from Firestore at runtime instead of being
+// compiled per couple. See REFACTOR_ROADMAP.md Phase 7.
+app.use('/api/wedding', weddingRoute); // ✅ Wedding API route — still used by the public web site
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {

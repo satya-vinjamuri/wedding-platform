@@ -58,8 +58,11 @@ export default function CalendarPage({ form, setForm }: CalendarPageProps) {
     const [eventDressCode, setEventDressCode] = useState("");
     const [isMobile, setIsMobile] = useState(false);
 
-
-
+    useEffect(() => {
+        if (!showTooltip) return;
+        const timer = setTimeout(() => setShowTooltip(false), 2500);
+        return () => clearTimeout(timer);
+    }, [showTooltip]);
 
 
     const getInitialDate = () => {

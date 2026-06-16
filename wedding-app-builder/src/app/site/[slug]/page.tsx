@@ -5,8 +5,8 @@ import WeddingSiteTabs from '@/components/website/WeddingSiteTabs';
 import { format, parseISO } from 'date-fns';
 import PasswordGate from '@/components/website/PasswordGate'; // New client component
 
-export default async function WeddingSitePage({ params }: { params: { slug: string } }) {
-  const slug = params.slug;
+export default async function WeddingSitePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
 
   const q = query(collection(db, 'weddingApps'), where('websiteSlug', '==', slug));
   const snapshot = await getDocs(q);

@@ -18,6 +18,16 @@ public class FlutterAppService {
 
     private static final Path TEMPLATE_PATH = Paths.get("src/main/resources/flutter_template");
     private static final Path OUTPUT_DIR = Paths.get("generated_apps");
+    private static final Set<String> EXCLUDED_TEMPLATE_PATHS = Set.of(
+            ".dart_tool",
+            "build",
+            ".flutter-plugins",
+            ".flutter-plugins-dependencies",
+            "ios/.symlinks",
+            "ios/Pods",
+            "ios/Podfile.lock",
+            "ios/Flutter/Generated.xcconfig",
+            "ios/Flutter/flutter_export_environment.sh");
 
     public String generateFlutterApp(FlutterAppForm formData) {
         String appId = UUID.randomUUID().toString();
@@ -25,7 +35,7 @@ public class FlutterAppService {
 
         try {
             FileUtils.copyDirectory(TEMPLATE_PATH.toFile(), appPath.toFile(),
-                    pathname -> !pathname.getName().equals("widget_test.dart"));
+                    pathname -> shouldCopyTemplatePath(pathname.toPath()));
 
             // main.dart
             Path mainPath = appPath.resolve("lib/main.dart");
@@ -200,6 +210,24 @@ public class FlutterAppService {
 
     private String escapeDart(String input) {
         return input == null ? "" : input.replace("'", "\\'");
+    }
+
+    private boolean shouldCopyTemplatePath(Path path) {
+        Path normalizedTemplatePath = TEMPLATE_PATH.toAbsolutePath().normalize();
+        Path normalizedPath = path.toAbsolutePath().normalize();
+        String relativePath = normalizedTemplatePath.relativize(normalizedPath).toString()
+                .replace(File.separatorChar, '/');
+
+        if (relativePath.isEmpty()) {
+            return true;
+        }
+
+        if (relativePath.endsWith("widget_test.dart")) {
+            return false;
+        }
+
+        return EXCLUDED_TEMPLATE_PATHS.stream().noneMatch(excludedPath ->
+                relativePath.equals(excludedPath) || relativePath.startsWith(excludedPath + "/"));
     }
 
     private String extractIdFromUrl(String url, String regex) {

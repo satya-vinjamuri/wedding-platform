@@ -1,30 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_template/main.dart';
+import 'package:flutter_template/providers/wedding_config_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
-  static const configuredPassword = '{{APP_PASSWORD}}';
-
-  bool get passwordRequired =>
-      configuredPassword.isNotEmpty &&
-      configuredPassword != '{{APP_PASSWORD}}';
-
   Future<void> _lockApp(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const AuthGate()),
-      (route) => false,
-    );
+    // Clear wedding session — returns user to the entry screen via AppShell
+    await context.read<WeddingConfigProvider>().clearWedding();
   }
 
   @override
   Widget build(BuildContext context) {
+    final config = context.watch<WeddingConfigProvider>().config;
+    final passwordRequired = config?.enablePassword ?? false;
+    final faqs = config?.faqs ?? const [];
+    final contacts = config?.contactInfo ?? const [];
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F5F1),
       appBar: AppBar(
@@ -68,52 +62,70 @@ class SettingsScreen extends StatelessWidget {
             ],
 
             // FAQ Accordion
-            ExpansionTile(
-              title: Text(
-                'FAQs',
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+            if (faqs.isNotEmpty) ...[
+              ExpansionTile(
+                title: Text(
+                  'FAQs',
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
+                children: faqs
+                    .map(
+                      (faq) => ListTile(
+                        title: Text(
+                          'Q: ${faq.question}\nA: ${faq.answer}',
+                          style: GoogleFonts.playfairDisplay(fontSize: 16),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
-              children: [
-                ListTile(
-                  title: Text(
-                    'Q: How do I RSVP?\nA: Tap on the RSVP button from the home screen and follow the prompts.',
-                    style: GoogleFonts.playfairDisplay(fontSize: 16),
-                  ),
-                ),
-                ListTile(
-                  title: Text(
-                    'Q: Who do I contact for issues?\nA: See the contact section below.',
-                    style: GoogleFonts.playfairDisplay(fontSize: 16),
-                  ),
-                ),
-              ],
-            ),
-
-            const Divider(thickness: 1.0),
+              const Divider(thickness: 1.0),
+            ],
 
             // Contact Info Accordion
-            ExpansionTile(
-              title: Text(
-                'Contact Information',
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-              children: [
-                ListTile(
-                  title: Text(
-                    'Neeraj: neeraj@example.com\nJinal: jinal@example.com',
-                    style: GoogleFonts.playfairDisplay(fontSize: 16),
+            if (contacts.isNotEmpty)
+              ExpansionTile(
+                title: Text(
+                  'Contact Information',
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
                 ),
-              ],
-            ),
+                children: contacts
+                    .map(
+                      (contact) => ListTile(
+                        title: Text(
+                          contact.name,
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: Text(
+                          [contact.email, contact.phone]
+                              .where((s) => s.isNotEmpty)
+                              .join(' · '),
+                          style: GoogleFonts.merriweather(fontSize: 14),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+
+            if (faqs.isEmpty && contacts.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text(
+                  'No FAQs or contact info have been added yet.',
+                  style: GoogleFonts.merriweather(fontSize: 15, color: Colors.black54),
+                ),
+              ),
           ],
         ),
       ),

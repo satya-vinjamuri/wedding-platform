@@ -1,41 +1,18 @@
 package com.example.flutterapp.controller;
 
-import com.example.flutterapp.dto.FlutterAppForm;
-import com.example.flutterapp.service.FlutterAppService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-
+// DEPRECATED — this Spring Boot service's only job was generating a unique
+// per-couple Flutter ZIP (POST /api/generate-app) under the old
+// compile-per-couple architecture. The Flutter app now reads WeddingConfig
+// from Firestore at runtime instead, so this whole backend is dead.
+// See REFACTOR_ROADMAP.md Phase 7.
+//
+// NOTE: src/main/resources/flutter_template/ is NOT dead — that directory
+// is the actual Flutter app source and should be treated as its own
+// standalone Flutter project, not as a resource of this Spring Boot app.
+// This service (controller/service/dto/config, build.gradle, etc.) is safe
+// to delete once the Flutter app has been extracted into its own repo/dir.
 @RestController
-@RequestMapping("/api")
 public class FlutterAppController {
-
-    @Autowired
-    private FlutterAppService flutterAppService;
-
-    @PostMapping("/generate-app")
-    public ResponseEntity<ByteArrayResource> generate(@RequestBody FlutterAppForm formData) {
-        String zipPath = flutterAppService.generateFlutterApp(formData);
-
-        try {
-            File file = new File(zipPath);
-            byte[] zipBytes = Files.readAllBytes(file.toPath());
-
-            ByteArrayResource resource = new ByteArrayResource(zipBytes);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDisposition(ContentDisposition.attachment().filename("wedding_app.zip").build());
-
-            return new ResponseEntity<>(resource, headers, HttpStatus.OK);
-
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
 }

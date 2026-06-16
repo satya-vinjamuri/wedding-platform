@@ -50,6 +50,11 @@ const SaveTheDate: React.FC<SaveTheDateProps> = ({
     const [isMobile, setIsMobile] = useState(false);
     const isSubmitted = form.isSubmitted;
     const [showTooltip, setShowTooltip] = useState(false);
+    useEffect(() => {
+        if (!showTooltip) return;
+        const timer = setTimeout(() => setShowTooltip(false), 2500);
+        return () => clearTimeout(timer);
+    }, [showTooltip]);
     const handleToggle = (field: keyof SaveTheDateProps["form"]) => {
         setForm((prev: { [x: string]: any }) => ({
             ...prev,
